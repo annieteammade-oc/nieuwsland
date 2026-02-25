@@ -1,0 +1,6 @@
+<svg width="400" height="120" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="200" height="60" fill="#0F172A"/>
+                        <text x="10" y="45" font-family="Inter, sans-serif" font-weight="900" font-size="32" fill="#FFFFFF" style="text-transform: uppercase; letter-spacing: -0.05em;">NIEUWS</text>
+                        <text x="135" y="45" font-family="Inter, sans-serif" font-weight="300" font-size="32" font-style="italic" fill="#FFFFFF" style="letter-spacing: -0.02em;">land</text>
+                        <circle cx="192" cy="40" r="3" fill="#FFFFFF" />
+                      </svg>

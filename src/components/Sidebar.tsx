@@ -28,7 +28,7 @@ export function Sidebar({ latest, bestRead }: SidebarProps) {
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="mb-4 text-lg font-black uppercase tracking-tight text-slate-900">Best Gelezen</h2>
+        <h2 className="mb-4 text-lg font-black uppercase tracking-tight text-slate-900">Meest Gelezen</h2>
         <ol className="space-y-4">
           {bestRead.slice(0, 5).map((item, index) => (
             <li key={item.id} className="flex items-start gap-3 border-b border-slate-100 pb-3 last:border-b-0 last:pb-0">

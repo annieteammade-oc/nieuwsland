@@ -5,6 +5,7 @@ import { ArticleGrid } from "@/components/ArticleGrid";
 import { CategoryBadge } from "@/components/CategoryBadge";
 import { LiveBadge } from "@/components/LiveBadge";
 import { Sidebar } from "@/components/Sidebar";
+import { VideoGallery, VideoShorts } from "@/components/VideoSections";
 import { getHomepageData } from "@/lib/news";
 import { formatTimeAgo } from "@/lib/format";
 import type { Article } from "@/lib/types";
@@ -108,6 +109,17 @@ export default async function HomePage() {
   }
 
   const videoLead = data.videos[0];
+  const fallbackItems = data.latest.slice(0, 6);
+  const pickCategory = (items: Article[]) => (items.length ? items : fallbackItems);
+  const sportItems = pickCategory(data.latest.filter((item) => item.category?.slug === "sport").slice(0, 6));
+  const techItems = pickCategory(data.latest.filter((item) => item.category?.slug === "tech").slice(0, 6));
+  const politiekItems = pickCategory(data.latest.filter((item) => item.category?.slug === "politiek").slice(0, 6));
+  const cultuurItems = pickCategory(data.latest.filter((item) => item.category?.slug === "cultuur").slice(0, 6));
+  const actualiteitItems = pickCategory(
+    data.latest
+      .filter((item) => ["belgie", "wereld", "economie", "wetenschap"].includes(item.category?.slug ?? ""))
+      .slice(0, 6),
+  );
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -143,36 +155,43 @@ export default async function HomePage() {
       </section>
 
       <section className="mt-10">
-        <SectionTitle title="Nieuws" subtitle="Laatste updates" />
+        <SectionTitle title="Nieuws van Vandaag" subtitle="Laatste updates" />
         <ArticleGrid articles={data.latest.slice(0, 9)} columns={3} />
       </section>
 
       <section className="mt-10">
         <SectionTitle title="Bekijk Video's" subtitle="Korte updates" />
-        <div className="flex gap-4 overflow-x-auto pb-2">
-          {data.videos.map((video) => (
-            <Link
-              key={video.id}
-              href={`/artikel/${video.slug}`}
-              className="group min-w-[280px] max-w-[280px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:scale-[1.02]"
-            >
-              <div className="relative h-40 bg-slate-100">
-                {video.image_url ? (
-                  <Image src={video.image_url} alt={video.title} fill className="object-cover" sizes="280px" />
-                ) : null}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="rounded-full bg-white/90 px-4 py-2 text-sm font-bold text-slate-900">Play</span>
-                </div>
-              </div>
-              <p className="p-3 text-sm font-black uppercase leading-tight tracking-tight text-slate-900">{video.title}</p>
-            </Link>
-          ))}
-        </div>
+        <VideoShorts videos={data.videos} />
       </section>
 
       <section className="mt-10">
         <SectionTitle title="Meer Nieuws" />
         <MixedNews items={data.mixedPrimary} />
+      </section>
+
+      <section className="mt-10">
+        <SectionTitle title="Sportnieuws" subtitle="Highlights van de sportredactie" />
+        <ArticleGrid articles={sportItems} columns={3} />
+      </section>
+
+      <section className="mt-10">
+        <SectionTitle title="Actualiteit" subtitle="Binnenland en buitenland" />
+        <ArticleGrid articles={actualiteitItems} columns={3} />
+      </section>
+
+      <section className="mt-10">
+        <SectionTitle title="Tech News" subtitle="Innovatie en digitale trends" />
+        <ArticleGrid articles={techItems} columns={3} />
+      </section>
+
+      <section className="mt-10">
+        <SectionTitle title="Politiek Nieuws" subtitle="Beslissingen en debatten" />
+        <ArticleGrid articles={politiekItems} columns={3} />
+      </section>
+
+      <section className="mt-10">
+        <SectionTitle title="Cultuur & Entertainment" subtitle="Kunst, media en muziek" />
+        <ArticleGrid articles={cultuurItems} columns={3} />
       </section>
 
       <section className="mt-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -215,40 +234,14 @@ export default async function HomePage() {
 
       {videoLead ? (
         <section className="mt-10">
-          <SectionTitle title="Video Gallery" subtitle="Uitgelichte reportages" />
-          <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
-            <Link href={`/artikel/${videoLead.slug}`} className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="relative h-[320px] bg-slate-100">
-                {videoLead.image_url ? (
-                  <Image src={videoLead.image_url} alt={videoLead.title} fill className="object-cover" sizes="66vw" />
-                ) : null}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="rounded-full bg-white/90 px-5 py-2 text-sm font-bold text-slate-900">Play</span>
-                </div>
-              </div>
-              <div className="p-4">
-                <p className="text-xl font-black uppercase tracking-tight text-slate-900">{videoLead.title}</p>
-                <p className="mt-2 text-sm text-slate-500">{videoLead.excerpt}</p>
-              </div>
-            </Link>
-
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-              {data.videos.slice(1, 5).map((item) => (
-                <Link key={item.id} href={`/artikel/${item.slug}`} className="flex gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-                  <div className="relative h-16 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100">
-                    {item.image_url ? <Image src={item.image_url} alt={item.title} fill className="object-cover" sizes="120px" /> : null}
-                  </div>
-                  <p className="text-sm font-black uppercase leading-tight tracking-tight text-slate-900">{item.title}</p>
-                </Link>
-              ))}
-            </div>
-          </div>
+          <SectionTitle title="Video Galerij" subtitle="Uitgelichte reportages" />
+          <VideoGallery lead={videoLead} items={data.videos.slice(1, 5)} />
         </section>
       ) : null}
 
       <section className="mt-10 grid gap-6 lg:grid-cols-[2fr_1fr]">
         <div>
-          <SectionTitle title="Meer Nieuws" subtitle="Verdieping" />
+          <SectionTitle title="Regionale Verdieping" subtitle="Focus op lokale verhalen" />
           <MixedNews items={data.mixedSecondary} />
         </div>
         <Sidebar latest={data.latest.slice(3)} bestRead={data.bestRead} />

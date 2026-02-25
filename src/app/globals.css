@@ -1,8 +1,11 @@
 ﻿@import "tailwindcss";
 
 :root {
-  --background: #f4f4f5;
-  --foreground: #0f172a;
+  --deep-navy: #1e3a8a;
+  --action-orange: #f97316;
+  --ink-black: #0f172a;
+  --slate-gray: #64748b;
+  --paper-white: #f8fafc;
 }
 
 * {
@@ -11,12 +14,41 @@
 
 body {
   margin: 0;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Georgia, "Times New Roman", Times, serif;
+  background: var(--paper-white);
+  color: var(--ink-black);
 }
 
 a {
   color: inherit;
   text-decoration: none;
 }
+
+.brand-transition {
+  transition: all 0.3s ease;
+}
+
+.entrance-fade {
+  animation: entrance-fade 0.7s ease both;
+}
+
+@keyframes entrance-fade {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.retro-card {
+  background-image:
+    linear-gradient(45deg, rgba(249, 115, 22, 0.09) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(249, 115, 22, 0.09) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(30, 58, 138, 0.08) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(30, 58, 138, 0.08) 75%);
+  background-size: 14px 14px;
+  background-position: 0 0, 0 7px, 7px -7px, -7px 0;
+}
+

@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { CategoryBadge } from "@/components/CategoryBadge";
 import type { Article } from "@/lib/types";
-import { formatDutchDateTime } from "@/lib/format";
+import { formatTimeAgo } from "@/lib/format";
 
 type ArticleCardProps = {
   article: Article;
@@ -10,8 +10,8 @@ type ArticleCardProps = {
 
 export function ArticleCard({ article }: ArticleCardProps) {
   return (
-    <article className="flex h-full flex-col overflow-hidden border border-zinc-200 bg-white">
-      <Link href={`/artikel/${article.slug}`} className="relative block h-48 w-full bg-zinc-100">
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:shadow-lg">
+      <Link href={`/artikel/${article.slug}`} className="relative block h-52 w-full bg-slate-100">
         {article.image_url ? (
           <Image
             src={article.image_url}
@@ -21,19 +21,22 @@ export function ArticleCard({ article }: ArticleCardProps) {
             sizes="(max-width: 768px) 100vw, 33vw"
           />
         ) : null}
+        <div className="absolute left-3 top-3">
+          <CategoryBadge category={article.category} />
+        </div>
       </Link>
       <div className="flex flex-1 flex-col gap-3 p-4">
-        <CategoryBadge category={article.category} />
-        <h3 className="text-xl font-semibold leading-tight text-zinc-900">
-          <Link href={`/artikel/${article.slug}`} className="hover:text-red-700">
+        <h3 className="text-xl font-black uppercase leading-tight tracking-[-0.03em] text-slate-900">
+          <Link href={`/artikel/${article.slug}`} className="transition-colors duration-300 hover:text-blue-900">
             {article.title}
           </Link>
         </h3>
-        <p className="text-sm leading-6 text-zinc-700">{article.excerpt}</p>
-        <p className="mt-auto text-xs uppercase tracking-wide text-zinc-500">
-          {formatDutchDateTime(article.published_at)}
+        <p className="text-sm leading-6 text-slate-500">{article.excerpt}</p>
+        <p className="mt-auto text-xs font-medium uppercase tracking-wide text-slate-500">
+          {formatTimeAgo(article.published_at)} | {article.source_name ?? "Nieuwsland.be"}
         </p>
       </div>
     </article>
   );
 }
+

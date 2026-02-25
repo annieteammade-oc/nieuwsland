@@ -35,7 +35,7 @@ export default async function RootLayout({
 
   return (
     <html lang="nl-BE">
-      <body className="bg-zinc-100 text-zinc-900 antialiased">
+      <body className="bg-slate-50 font-sans text-slate-900 antialiased" style={{ fontFamily: "Inter, sans-serif" }}>
         <Header categories={categories} topArticle={homepageData.hero} />
         <BreakingBanner items={homepageData.breaking} />
         <main>{children}</main>

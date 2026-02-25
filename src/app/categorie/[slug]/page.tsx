@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   }
 
   return {
-    title: `${category.name}`,
+    title: category.name,
     description: category.description ?? `Nieuws uit de categorie ${category.name} op Nieuwsland.be.`,
     openGraph: {
       title: `${category.name} | Nieuwsland.be`,
@@ -45,9 +45,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8 border-b border-zinc-300 pb-4">
-        <h1 className="text-4xl font-bold text-zinc-900">{category.name}</h1>
-        <p className="mt-3 max-w-3xl text-zinc-700">
+      <div className="mb-8 rounded-3xl bg-gradient-to-r from-[#1E3A8A] to-blue-700 p-7 text-white">
+        <p className="text-xs font-bold uppercase tracking-[0.08em] text-blue-100">Categorie</p>
+        <h1 className="mt-2 text-4xl font-black uppercase tracking-tight">{category.name}</h1>
+        <p className="mt-3 max-w-3xl text-sm text-blue-50">
           {category.description ?? `Alle recente artikels uit ${category.name}.`}
         </p>
       </div>
@@ -55,9 +56,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
         <section>
           {articles.length ? (
-            <ArticleGrid articles={articles} columns={2} />
+            <ArticleGrid articles={articles} columns={3} />
           ) : (
-            <p className="rounded border border-zinc-200 bg-white p-6 text-zinc-600">
+            <p className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-600 shadow-sm">
               Nog geen artikels in deze categorie.
             </p>
           )}
@@ -67,3 +68,4 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     </div>
   );
 }
+

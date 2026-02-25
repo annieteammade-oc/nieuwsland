@@ -14,8 +14,8 @@ export function HeroArticle({ article }: HeroArticleProps) {
   }
 
   return (
-    <article className="relative overflow-hidden bg-zinc-900 text-white">
-      <Link href={`/artikel/${article.slug}`} className="relative block min-h-[420px]">
+    <article className="relative overflow-hidden rounded-3xl bg-slate-900 text-white shadow-xl">
+      <Link href={`/artikel/${article.slug}`} className="relative block min-h-[440px]">
         {article.image_url ? (
           <Image
             src={article.image_url}
@@ -26,16 +26,19 @@ export function HeroArticle({ article }: HeroArticleProps) {
             sizes="100vw"
           />
         ) : null}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
-          <div className="mb-3 flex items-center gap-3">
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-10">
+          <div className="mb-4 flex items-center gap-3">
             <CategoryBadge category={article.category} />
             {article.is_breaking ? <LiveBadge /> : null}
           </div>
-          <h1 className="max-w-3xl text-3xl font-bold leading-tight sm:text-5xl">{article.title}</h1>
-          <p className="mt-4 max-w-2xl text-base text-zinc-100 sm:text-lg">{article.excerpt}</p>
+          <h1 className="max-w-4xl text-3xl font-black uppercase leading-tight tracking-[-0.03em] sm:text-5xl">
+            {article.title}
+          </h1>
+          <p className="mt-4 max-w-3xl text-base text-slate-100 sm:text-lg">{article.excerpt}</p>
         </div>
       </Link>
     </article>
   );
 }
+

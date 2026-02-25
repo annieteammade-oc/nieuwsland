@@ -24,6 +24,9 @@ export type Article = {
   image_caption: string | null;
   source_name: string | null;
   source_url: string | null;
+  video_url?: string | null;
+  youtube_url?: string | null;
+  region?: string | null;
   is_featured: boolean;
   is_breaking: boolean;
   published_at: string;
@@ -34,3 +37,4 @@ export type Article = {
   category: Category | null;
   author: Author | null;
 };
+

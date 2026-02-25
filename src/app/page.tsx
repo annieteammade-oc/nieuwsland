@@ -1,8 +1,13 @@
 ﻿import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import { ArticleGrid } from "@/components/ArticleGrid";
-import { HeroArticle } from "@/components/HeroArticle";
+import { CategoryBadge } from "@/components/CategoryBadge";
+import { LiveBadge } from "@/components/LiveBadge";
 import { Sidebar } from "@/components/Sidebar";
 import { getHomepageData } from "@/lib/news";
+import { formatTimeAgo } from "@/lib/format";
+import type { Article } from "@/lib/types";
 
 export const revalidate = 300;
 
@@ -16,28 +21,261 @@ export const metadata: Metadata = {
   },
 };
 
+function SectionTitle({
+  title,
+  subtitle,
+  inverse = false,
+}: {
+  title: string;
+  subtitle?: string;
+  inverse?: boolean;
+}) {
+  return (
+    <div className={`mb-5 flex items-end justify-between gap-3 border-b pb-3 ${inverse ? "border-blue-300/50" : "border-slate-200"}`}>
+      <h2 className={`text-2xl font-black uppercase tracking-tight ${inverse ? "text-white" : "text-slate-900"}`}>{title}</h2>
+      {subtitle ? <p className={`text-sm ${inverse ? "text-blue-100" : "text-slate-500"}`}>{subtitle}</p> : null}
+    </div>
+  );
+}
+
+function HeroSideItem({ article }: { article: Article }) {
+  return (
+    <Link
+      href={`/artikel/${article.slug}`}
+      className="group relative block h-52 overflow-hidden rounded-2xl bg-slate-900"
+    >
+      {article.image_url ? (
+        <Image src={article.image_url} alt={article.title} fill className="object-cover opacity-80" sizes="33vw" />
+      ) : null}
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+      <div className="absolute bottom-0 p-4">
+        <CategoryBadge category={article.category} />
+        <p className="mt-3 text-base font-black uppercase leading-tight tracking-tight text-white">
+          {article.title}
+        </p>
+      </div>
+    </Link>
+  );
+}
+
+function MixedNews({ items }: { items: Article[] }) {
+  const [lead, ...rest] = items;
+  if (!lead) {
+    return null;
+  }
+
+  return (
+    <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+      <Link href={`/artikel/${lead.slug}`} className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="relative h-72 bg-slate-100">
+          {lead.image_url ? <Image src={lead.image_url} alt={lead.title} fill className="object-cover" sizes="60vw" /> : null}
+          <div className="absolute left-4 top-4">
+            <CategoryBadge category={lead.category} />
+          </div>
+        </div>
+        <div className="p-5">
+          <h3 className="text-2xl font-black uppercase leading-tight tracking-tight text-slate-900">{lead.title}</h3>
+          <p className="mt-2 text-sm text-slate-500">{lead.excerpt}</p>
+        </div>
+      </Link>
+      <div className="space-y-3">
+        {rest.slice(0, 4).map((item) => (
+          <Link
+            key={item.id}
+            href={`/artikel/${item.slug}`}
+            className="flex gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition-all duration-300 hover:scale-[1.02]"
+          >
+            <div className="relative h-20 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100">
+              {item.image_url ? <Image src={item.image_url} alt={item.title} fill className="object-cover" sizes="120px" /> : null}
+            </div>
+            <div>
+              <p className="text-sm font-black uppercase leading-tight tracking-tight text-slate-900">{item.title}</p>
+              <p className="mt-1 text-xs uppercase text-slate-500">{formatTimeAgo(item.published_at)}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default async function HomePage() {
   const data = await getHomepageData();
+  const hero = data.hero;
+
+  if (!hero) {
+    return null;
+  }
+
+  const videoLead = data.videos[0];
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <HeroArticle article={data.hero} />
+      <section className="grid gap-6 lg:grid-cols-[2fr_1fr] entrance-fade">
+        <div className="space-y-4">
+          <article className="relative overflow-hidden rounded-3xl bg-slate-900 text-white shadow-xl">
+            <Link href={`/artikel/${hero.slug}`} className="relative block min-h-[420px]">
+              {hero.image_url ? (
+                <Image src={hero.image_url} alt={hero.title} fill className="object-cover opacity-75" priority sizes="66vw" />
+              ) : null}
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
+                <div className="mb-3 flex items-center gap-3">
+                  <CategoryBadge category={hero.category} />
+                  {hero.is_breaking ? <LiveBadge /> : null}
+                </div>
+                <h1 className="max-w-3xl text-3xl font-black uppercase leading-tight tracking-[-0.03em] sm:text-5xl">
+                  {hero.title}
+                </h1>
+                <p className="mt-3 max-w-2xl text-sm text-slate-200 sm:text-base">{hero.excerpt}</p>
+              </div>
+            </Link>
+          </article>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[2fr_1fr]">
-        <section className="space-y-10">
-          <div>
-            <h2 className="mb-5 border-b border-zinc-300 pb-3 text-2xl font-bold">Uitgelicht</h2>
-            <ArticleGrid articles={data.featuredGrid} columns={2} />
+          <div className="grid gap-4 md:grid-cols-2">
+            {data.heroSide.map((item) => (
+              <HeroSideItem key={item.id} article={item} />
+            ))}
           </div>
-
-          <div>
-            <h2 className="mb-5 border-b border-zinc-300 pb-3 text-2xl font-bold">Laatste Nieuws</h2>
-            <ArticleGrid articles={data.latest} columns={3} />
-          </div>
-        </section>
+        </div>
 
         <Sidebar latest={data.latest} bestRead={data.bestRead} />
-      </div>
+      </section>
+
+      <section className="mt-10">
+        <SectionTitle title="Nieuws" subtitle="Laatste updates" />
+        <ArticleGrid articles={data.latest.slice(0, 9)} columns={3} />
+      </section>
+
+      <section className="mt-10">
+        <SectionTitle title="Bekijk Video's" subtitle="Korte updates" />
+        <div className="flex gap-4 overflow-x-auto pb-2">
+          {data.videos.map((video) => (
+            <Link
+              key={video.id}
+              href={`/artikel/${video.slug}`}
+              className="group min-w-[280px] max-w-[280px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:scale-[1.02]"
+            >
+              <div className="relative h-40 bg-slate-100">
+                {video.image_url ? (
+                  <Image src={video.image_url} alt={video.title} fill className="object-cover" sizes="280px" />
+                ) : null}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="rounded-full bg-white/90 px-4 py-2 text-sm font-bold text-slate-900">Play</span>
+                </div>
+              </div>
+              <p className="p-3 text-sm font-black uppercase leading-tight tracking-tight text-slate-900">{video.title}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <SectionTitle title="Meer Nieuws" />
+        <MixedNews items={data.mixedPrimary} />
+      </section>
+
+      <section className="mt-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <SectionTitle title="Meest Gelezen" subtitle="Top 10" />
+        <ol className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {data.bestRead.map((item, index) => (
+            <li key={item.id} className="flex gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <span className="text-2xl font-black text-orange-500">{index + 1}</span>
+              <Link href={`/artikel/${item.slug}`} className="flex flex-1 gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-black uppercase leading-tight tracking-tight text-slate-900">{item.title}</p>
+                </div>
+                <div className="relative h-14 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-slate-200">
+                  {item.image_url ? <Image src={item.image_url} alt={item.title} fill className="object-cover" sizes="80px" /> : null}
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="mt-10 rounded-3xl bg-[#1E3A8A] p-6 text-white">
+        <SectionTitle title="Regionaal" subtitle="Populair op Regio" inverse />
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {data.regional.map((item) => (
+            <Link
+              key={item.id}
+              href={`/artikel/${item.slug}`}
+              className="rounded-2xl border border-blue-400/60 bg-blue-800/40 p-3 transition-all duration-300 hover:scale-[1.02]"
+            >
+              <div className="relative h-36 overflow-hidden rounded-xl">
+                {item.image_url ? <Image src={item.image_url} alt={item.title} fill className="object-cover" sizes="300px" /> : null}
+              </div>
+              <p className="mt-3 text-xs uppercase tracking-wide text-orange-300">{item.region ?? "Vlaanderen"}</p>
+              <p className="mt-1 text-sm font-black uppercase leading-tight tracking-tight">{item.title}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {videoLead ? (
+        <section className="mt-10">
+          <SectionTitle title="Video Gallery" subtitle="Uitgelichte reportages" />
+          <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
+            <Link href={`/artikel/${videoLead.slug}`} className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div className="relative h-[320px] bg-slate-100">
+                {videoLead.image_url ? (
+                  <Image src={videoLead.image_url} alt={videoLead.title} fill className="object-cover" sizes="66vw" />
+                ) : null}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="rounded-full bg-white/90 px-5 py-2 text-sm font-bold text-slate-900">Play</span>
+                </div>
+              </div>
+              <div className="p-4">
+                <p className="text-xl font-black uppercase tracking-tight text-slate-900">{videoLead.title}</p>
+                <p className="mt-2 text-sm text-slate-500">{videoLead.excerpt}</p>
+              </div>
+            </Link>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+              {data.videos.slice(1, 5).map((item) => (
+                <Link key={item.id} href={`/artikel/${item.slug}`} className="flex gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                  <div className="relative h-16 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100">
+                    {item.image_url ? <Image src={item.image_url} alt={item.title} fill className="object-cover" sizes="120px" /> : null}
+                  </div>
+                  <p className="text-sm font-black uppercase leading-tight tracking-tight text-slate-900">{item.title}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="mt-10 grid gap-6 lg:grid-cols-[2fr_1fr]">
+        <div>
+          <SectionTitle title="Meer Nieuws" subtitle="Verdieping" />
+          <MixedNews items={data.mixedSecondary} />
+        </div>
+        <Sidebar latest={data.latest.slice(3)} bestRead={data.bestRead} />
+      </section>
+
+      <section className="mt-10 mb-4 rounded-3xl border-2 border-slate-900 bg-white p-6 retro-card">
+        <SectionTitle title="Spelletjes" subtitle="Retro arcade" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            { name: "Woordraadsel", icon: "[W]", text: "Vind het woord in zes beurten." },
+            { name: "Kruiswoord", icon: "[+]", text: "Vul het raster met slimme hints." },
+            { name: "Memory", icon: "[M]", text: "Match alle kaarten zo snel mogelijk." },
+            { name: "Snake", icon: "[S]", text: "Groei zonder de muren te raken." },
+            { name: "Tetris", icon: "[T]", text: "Stapel blokken en wis lijnen." },
+            { name: "Quiz", icon: "[?]", text: "Test je kennis van het nieuws." },
+          ].map((game) => (
+            <div key={game.name} className="rounded-2xl border-2 border-slate-900 bg-white p-4 shadow-[4px_4px_0_0_#0f172a]">
+              <p className="text-2xl font-black text-[#1E3A8A]">{game.icon}</p>
+              <h3 className="mt-2 text-lg font-black uppercase tracking-tight text-slate-900">{game.name}</h3>
+              <p className="mt-1 text-sm text-slate-600">{game.text}</p>
+              <button className="mt-4 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:scale-105 hover:bg-[#F97316] active:scale-95">
+                Speel
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

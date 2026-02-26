@@ -115,6 +115,13 @@ def check_formatting(content):
     return len(issues) == 0, issues
 
 
+def check_has_source(source_url, source_name):
+    """Artikel MOET een bron hebben — geen verzonnen content"""
+    if not source_url and not source_name:
+        return False, "Geen bron vermeld. Artikelen MOETEN gebaseerd zijn op echte bronnen."
+    return True, None
+
+
 def check_not_duplicate_content(content):
     """Voorkom dat dezelfde tekst twee keer in het artikel staat"""
     paragraphs = [p.strip() for p in content.split('\n\n') if p.strip() and len(p.strip()) > 50]

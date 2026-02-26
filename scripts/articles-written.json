@@ -126,5 +126,37 @@
     "discord_msg_id": "1476587414154641551",
     "written_at": "2026-02-26 15:31",
     "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 147,
+      "found_at": "2026-02-26 6:03",
+      "category": "belgium",
+      "source": "VRT NWS",
+      "title": "\"Het doet deugd wanneer er gepraat wordt over Bob\": Sven de Leijer openhartig over verlies eerste zoon",
+      "link": "https://vrtnws.be/p.oLjkV1oqY",
+      "score": 5,
+      "reden": "Bekende Vlaming, emotioneel verhaal, hoge herkenbaarheid."
+    },
+    "article": "TITEL: Sven de Leijer openhartig over verlies zoontje Bob: \"Het doet deugd als erover gepraat wordt\"\nSUBTITEL: De populaire presentator deelt emotionele inzichten over het omgaan met stilgeboorte en de blijvende aanwezigheid van zijn eerste zoon in het gezin.\nTAGS: Sven de Leijer, stilgeboorte, rouwverwerking, familie, VRT\nAFBEELDING: Een ingetogen portret van Sven de Leijer, mogelijk met een zachte, warme belichting. De foto straalt sereniteit en reflectie uit.\n\n---\n\n**Sven de Leijer, bekend va...",
+    "discord_msg_id": "1476647715097153579",
+    "written_at": "2026-02-26 19:30",
+    "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 149,
+      "found_at": "2026-02-26 6:03",
+      "category": "belgium",
+      "source": "HLN",
+      "title": "Recordaantal Belgen combineert twee jobs. Elke en Lino leggen uit waarom: “Het gaat niet alleen om de extra centen”",
+      "link": "https://www.hln.be/binnenland/recordaantal-belgen-combineert-twee-jobs-elke-en-lino-leggen-uit-waarom-het-gaat-niet-alleen-om-de-extra-centen~a126361b/",
+      "score": 5,
+      "reden": "Economisch nieuws, direct relevant voor Belgische werknemers."
+    },
+    "article": "TITEL: **Meer Belgen dan ooit combineren twee jobs: niet enkel om financiële redenen**\nSUBTITEL: Een nieuwe trend toont aan dat steeds meer Belgen kiezen voor een dubbele carrière. Het gaat verder dan alleen de extra inkomsten; passie en persoonlijke ontwikkeling spelen een cruciale rol.\nTAGS: werk, dubbele job, België, economie, carrière\nAFBEELDING: Een split-screen afbeelding met aan de ene kant een persoon in een formele kantooromgeving en aan de andere kant dezelfde persoon die een hobby uit...",
+    "discord_msg_id": "1476647817140240416",
+    "written_at": "2026-02-26 19:31",
+    "status": "REVIEW"
   }
 ]

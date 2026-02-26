@@ -179,7 +179,7 @@ def post_to_discord(topic, article_text):
         f"TAGS: {tags}\n"
         f"AFBEELDING: {afbeelding}\n\n"
         f"---\n"
-        f"✅ = Goedkeuren & publiceren op WordPress\n"
+        f"✅ = Goedkeuren & publiceren op Nieuwsland.be\n"
         f"❌ = Afwijzen (geef feedback als reply)"
     )
     

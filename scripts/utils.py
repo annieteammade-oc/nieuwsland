@@ -463,6 +463,113 @@ def wp_publish(title, content, category=None, tags=None, featured_image_url=None
 
 
 # ============================================================
+# SUPABASE API
+# ============================================================
+
+def get_supabase_creds():
+    """Returns Supabase URL and service role key"""
+    if "supabase" not in _creds_cache:
+        path = os.path.join(_workspace(), "credentials", "supabase-nieuwsland.json")
+        with open(path) as f:
+            data = json.load(f)
+        _creds_cache["supabase"] = {
+            "url": data["project_url"],
+            "key": data["service_role_key"],
+        }
+    return _creds_cache["supabase"]
+
+def supabase_request(method, table, data=None, params=""):
+    """Make a Supabase REST API request using service_role key"""
+    sb = get_supabase_creds()
+    url = f"{sb['url']}/rest/v1/{table}{params}"
+    body = json.dumps(data).encode() if data else None
+    headers = {
+        "apikey": sb["key"],
+        "Authorization": f"Bearer {sb['key']}",
+        "Content-Type": "application/json",
+        "Prefer": "return=representation",
+    }
+    req = urllib.request.Request(url, data=body, method=method, headers=headers)
+    try:
+        resp = urllib.request.urlopen(req, context=ctx)
+        result = resp.read().decode()
+        return json.loads(result) if result else None
+    except urllib.error.HTTPError as e:
+        print(f"Supabase API error {e.code}: {e.read().decode()}")
+        return None
+
+def supabase_get_category_id(slug):
+    """Get category ID from slug"""
+    result = supabase_request("GET", "categories", params=f"?slug=eq.{slug}&select=id&limit=1")
+    if result and len(result) > 0:
+        return result[0]["id"]
+    return None
+
+def supabase_get_author_id(category_slug):
+    """Get the assigned author ID for a category based on REDACTIEHANDBOEK mapping"""
+    CATEGORY_AUTHOR = {
+        "belgie": "lara-van-den-bossche",
+        "regionaal": "lara-van-den-bossche",
+        "politiek": "pieter-de-smet",
+        "economie": "noor-el-kadi",
+        "sport": "jonas-vercauteren",
+        "tech": "elise-martens",
+        "wetenschap": "dries-claes",
+        "cultuur": "camille-dupont",
+        "wereld": "tom-wouters",
+        "opinie": "sofie-vermeulen",
+    }
+    author_slug = CATEGORY_AUTHOR.get(category_slug)
+    if not author_slug:
+        return None
+    result = supabase_request("GET", "authors", params=f"?slug=eq.{author_slug}&select=id&limit=1")
+    if result and len(result) > 0:
+        return result[0]["id"]
+    return None
+
+def supabase_publish(title, content, category_slug, excerpt=None, image_url=None,
+                     source_name=None, source_url=None, status="published",
+                     is_featured=False, is_breaking=False, region=None):
+    """Publish an article to Supabase. Returns the created article or None."""
+    import re as _re
+    # Generate slug from title
+    slug = title.lower().strip()
+    slug = _re.sub(r'[^a-z0-9\s-]', '', slug)
+    slug = _re.sub(r'\s+', '-', slug)
+    slug = slug[:80].rstrip('-')
+    # Add hash to ensure uniqueness
+    slug = f"{slug}-{hashlib.md5(title.encode()).hexdigest()[:6]}"
+    
+    category_id = supabase_get_category_id(category_slug)
+    author_id = supabase_get_author_id(category_slug)
+    
+    article_data = {
+        "title": title,
+        "slug": slug,
+        "content": content,
+        "excerpt": excerpt or content[:200] + "..." if content else None,
+        "image_url": image_url,
+        "source_name": source_name,
+        "source_url": source_url,
+        "status": status,
+        "is_featured": is_featured,
+        "is_breaking": is_breaking,
+        "region": region,
+        "category_id": category_id,
+        "author_id": author_id,
+        "views": 0,
+    }
+    
+    # Remove None values
+    article_data = {k: v for k, v in article_data.items() if v is not None}
+    
+    result = supabase_request("POST", "articles", article_data)
+    if result and len(result) > 0:
+        return result[0]
+    return None
+
+
+# ============================================================
 # CONTENT TRACKING (local JSON as backup)
 # ============================================================
 

@@ -304,7 +304,7 @@ def run():
                 f"SUBTITEL: {samenvatting}\n"
                 f"TAGS: {tags}\n\n"
                 f"---\n"
-                f"✅ = Goedkeuren & publiceren op WordPress\n"
+                f"✅ = Goedkeuren & publiceren op Nieuwsland.be\n"
                 f"❌ = Afwijzen (geef feedback als reply)"
             )
             

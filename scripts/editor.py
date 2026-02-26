@@ -1,7 +1,7 @@
 """
 Nieuwsland.be — Editor Agent (Hoofdredacteur)
 Monitort #review-queue voor Dennis' reacties (✅/❌).
-Bij ✅ → publiceert naar WordPress.
+Bij ✅ → publiceert naar Supabase (live op nieuwsland.be).
 Bij ❌ → leest feedback, laat herschrijven.
 Draait via cron elke 15 minuten.
 """
@@ -10,7 +10,7 @@ import sys, os, json, time, re
 sys.path.insert(0, os.path.dirname(__file__))
 from utils import (
     discord_send, discord_get_messages, discord_request, log,
-    llm_generate, wp_publish, now_str, sheets_read, sheets_update,
+    llm_generate, supabase_publish, now_str, sheets_read, sheets_update,
     BOT_ID, CHANNELS
 )
 
@@ -235,45 +235,48 @@ Herschrijf het artikel en verwerk alle feedback."""
     return llm_generate(prompt, model="google/gemini-2.5-flash", system=system, max_tokens=3000)
 
 def handle_approval(review):
-    """Handle an approved article"""
+    """Handle an approved article — publish to Supabase"""
     article_data = extract_article_from_review(review["content"])
     
-    # Get WP category ID
-    cat_id = get_wp_category_id(article_data["category"])
+    # Map channel category to Supabase category slug
+    cat_slug = CHANNEL_TO_WP_CAT.get(article_data["category"], article_data["category"])
     
     # Extract tags from review content
     tags_match = re.search(r'TAGS:\s*(.+)', review["content"])
     tag_names = [t.strip() for t in tags_match.group(1).split(",")] if tags_match else []
-    tag_ids = get_wp_tag_ids(tag_names)
     
-    # Publish to WordPress with category + tags
-    wp_result = wp_publish(
+    # Extract source info
+    source_match = re.search(r'Bron:\s*(.+)', review["content"])
+    source_name = source_match.group(1).strip() if source_match else None
+    
+    # Publish to Supabase
+    result = supabase_publish(
         title=article_data["title"],
         content=article_data["body"],
-        category=[cat_id] if cat_id else None,
-        tags=tag_ids if tag_ids else None,
-        status="draft",
+        category_slug=cat_slug,
+        source_name=source_name,
+        status="published",
     )
     
-    if wp_result and wp_result.get("id"):
-        wp_url = wp_result.get("link", "")
-        cat_name = article_data["category"].upper()
+    if result and result.get("id"):
+        article_url = f"https://nieuwsland.be/artikel/{result['slug']}"
+        cat_name = cat_slug.upper()
         tags_str = ", ".join(tag_names) if tag_names else "geen"
         discord_send("review-queue", 
             f"✅ **GEPUBLICEERD** — {article_data['title']}\n"
-            f"WordPress ID: {wp_result['id']}\n"
+            f"Supabase ID: {result['id']}\n"
             f"Categorie: {cat_name} | Tags: {tags_str}\n"
-            f"Status: draft (klaar om live te zetten in WP)\n"
-            f"URL: {wp_url}")
+            f"Status: live op nieuwsland.be\n"
+            f"URL: {article_url}")
         
-        log("Editor", f"✅ Artikel gepubliceerd: {article_data['title']} (WP #{wp_result['id']})")
+        log("Editor", f"✅ Artikel gepubliceerd: {article_data['title']} (#{result['id']})")
         
         # Update Sheet status
-        update_sheet_article_status(article_data["title"], "GEPUBLICEERD", wp_url)
+        update_sheet_article_status(article_data["title"], "GEPUBLICEERD", article_url)
     else:
         discord_send("review-queue",
             f"⚠️ Publicatie mislukt voor: {article_data['title']}\n"
-            f"WordPress API error — check #logs")
+            f"Supabase API error — check #logs")
         log("Editor", f"❌ Publicatie mislukt: {article_data['title']}")
 
 def handle_rejection(review):

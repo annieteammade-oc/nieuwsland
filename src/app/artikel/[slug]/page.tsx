@@ -106,7 +106,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               {article.title}
             </h1>
 
-            {article.excerpt ? <p className="mt-5 text-lg leading-8 text-slate-700">{article.excerpt}</p> : null}
+            {article.excerpt ? (
+              <div
+                className="mt-5 text-lg leading-8 text-slate-700"
+                dangerouslySetInnerHTML={{ __html: marked(article.excerpt) as string }}
+              />
+            ) : null}
 
             <div
               className="prose prose-lg mt-8 max-w-none text-slate-800"

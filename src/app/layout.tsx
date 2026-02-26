@@ -1,6 +1,5 @@
 ﻿import type { Metadata } from "next";
 import "./globals.css";
-import { BreakingBanner } from "@/components/BreakingBanner";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { getCategories, getHomepageData } from "@/lib/news";
@@ -40,8 +39,7 @@ export default async function RootLayout({
   return (
     <html lang="nl-BE">
       <body className="bg-slate-50 font-sans text-slate-900 antialiased" style={{ fontFamily: "Inter, sans-serif" }}>
-        <Header categories={categories} topArticle={homepageData.hero} />
-        <BreakingBanner items={homepageData.breaking} />
+        <Header categories={categories} />
         <main>{children}</main>
         <Footer />
       </body>

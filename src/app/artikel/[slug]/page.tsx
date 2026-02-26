@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { marked } from "marked";
@@ -7,7 +7,7 @@ import { CategoryBadge } from "@/components/CategoryBadge";
 import { LiveBadge } from "@/components/LiveBadge";
 import { Sidebar } from "@/components/Sidebar";
 import { formatDutchDateTime } from "@/lib/format";
-import { getArticleBySlug, getHomepageData, getRelatedArticles } from "@/lib/news";
+import { getArticleBySlug, getHomepageData, getRelatedArticles, getAllPublishedArticles } from "@/lib/news";
 
 export const revalidate = 300;
 
@@ -20,9 +20,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   const article = await getArticleBySlug(slug);
 
   if (!article) {
-    return {
-      title: "Artikel niet gevonden",
-    };
+    return { title: "Artikel niet gevonden" };
   }
 
   return {
@@ -46,10 +44,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound();
   }
 
-  const [relatedArticles, homepageData] = await Promise.all([
+  const [relatedArticles, homepageData, allArticles] = await Promise.all([
     getRelatedArticles(article),
     getHomepageData(),
+    getAllPublishedArticles(),
   ]);
+
+  // "Lees meer" — mixed articles (different from related), max 6
+  const leesmeerArticles = allArticles
+    .filter((a) => a.id !== article.id && !relatedArticles.some((r) => r.id === a.id))
+    .slice(0, 6);
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -60,88 +64,240 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     datePublished: article.published_at,
     dateModified: article.published_at,
     author: article.author
-      ? {
-          "@type": "Person",
-          name: article.author.name,
-        }
+      ? { "@type": "Person", name: article.author.name }
       : undefined,
-    publisher: {
-      "@type": "Organization",
-      name: "Nieuwsland.be",
-    },
+    publisher: { "@type": "Organization", name: "Nieuwsland.be" },
     mainEntityOfPage: `https://nieuwsland.be/artikel/${article.slug}`,
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
-        <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-          {article.image_url ? (
-            <div className="relative h-[340px] w-full sm:h-[460px]">
-              <Image
-                src={article.image_url}
-                alt={article.title}
-                fill
-                className="object-cover"
-                priority
-                sizes="(max-width: 1024px) 100vw, 66vw"
-              />
-            </div>
-          ) : null}
-          <div className="p-6 sm:p-10">
-            <div className="mb-4 flex flex-wrap items-center gap-3">
+      {/* Full-width header image */}
+      {article.image_url ? (
+        <div className="relative h-[340px] w-full sm:h-[500px]">
+          <Image
+            src={article.image_url}
+            alt={article.title}
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
+          />
+        </div>
+      ) : null}
+
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
+          {/* Main article column */}
+          <article className="max-w-none">
+            {/* Category badge + date */}
+            <div className="mb-3 flex flex-wrap items-center gap-3">
               <CategoryBadge category={article.category} />
               {article.is_breaking ? <LiveBadge /> : null}
-              <span className="text-xs uppercase tracking-wide text-slate-500">
+              <span className="text-xs tracking-wide text-slate-500">
                 {formatDutchDateTime(article.published_at)}
               </span>
             </div>
 
-            <h1 className="text-2xl font-black leading-tight tracking-tight text-slate-900 sm:text-3xl">
+            {/* Title — HLN style */}
+            <h1
+              className="text-slate-900"
+              style={{ fontSize: "2.375rem", fontWeight: 400, lineHeight: "46px" }}
+            >
               {article.title}
             </h1>
 
+            {/* Intro/excerpt — bold */}
             {article.excerpt ? (
-              <p className="text-lg text-slate-600 mt-3 leading-relaxed">
+              <p
+                className="mt-4 text-slate-800"
+                style={{ fontSize: "20px", fontWeight: 700, lineHeight: "30px" }}
+              >
                 {article.excerpt}
               </p>
             ) : null}
 
+            {/* Author */}
+            {article.author ? (
+              <div className="mt-4 flex items-center gap-3">
+                {article.author.avatar_url ? (
+                  <Image
+                    src={article.author.avatar_url}
+                    alt={article.author.name}
+                    width={40}
+                    height={40}
+                    className="rounded-full"
+                  />
+                ) : null}
+                <div>
+                  <p className="text-sm text-slate-700">
+                    Door{" "}
+                    <Link
+                      href={`/auteur/${article.author.slug}`}
+                      className="font-bold text-slate-900 hover:text-[#1E3A8A] hover:underline"
+                    >
+                      {article.author.name}
+                    </Link>
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {formatDutchDateTime(article.published_at)}
+                  </p>
+                </div>
+              </div>
+            ) : null}
+
+            {/* Divider */}
+            <hr className="my-6 border-slate-200" />
+
+            {/* Body text */}
             <div
-              className="prose prose-lg mt-8 max-w-none text-slate-800"
+              className="prose max-w-none text-slate-800"
+              style={{ fontSize: "18px", lineHeight: "27px" }}
               dangerouslySetInnerHTML={{ __html: marked(article.content ?? "") as string }}
             />
 
-            {article.author ? (
-              <p className="mt-8 border-t border-slate-200 pt-4 text-sm text-slate-600">
-                Door <Link href={`/auteur/${article.author.slug}`} className="font-semibold text-slate-800 hover:text-[#1E3A8A] hover:underline">{article.author.name}</Link>
-              </p>
+            {/* Ook interessant voor jou */}
+            {relatedArticles.length > 0 ? (
+              <section className="mt-12 border-t border-slate-200 pt-8">
+                <h2 className="mb-5 text-lg font-bold text-slate-900">
+                  Ook interessant voor jou
+                </h2>
+                <ul className="space-y-4">
+                  {relatedArticles.map((item) => (
+                    <li key={item.id}>
+                      <Link
+                        href={`/artikel/${item.slug}`}
+                        className="flex items-start gap-4 group"
+                      >
+                        {item.image_url ? (
+                          <div className="relative h-[80px] w-[120px] flex-shrink-0 overflow-hidden rounded-lg">
+                            <Image
+                              src={item.image_url}
+                              alt={item.title}
+                              fill
+                              className="object-cover"
+                              sizes="120px"
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-[80px] w-[120px] flex-shrink-0 rounded-lg bg-slate-200" />
+                        )}
+                        <span
+                          className="font-semibold text-slate-800 group-hover:text-[#1E3A8A]"
+                          style={{ fontSize: "20px", lineHeight: "26px" }}
+                        >
+                          {item.title}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             ) : null}
-          </div>
-        </article>
 
-        <aside className="space-y-8">
-          <Sidebar latest={homepageData.latest} bestRead={homepageData.bestRead} />
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="mb-4 text-lg font-black uppercase tracking-tight text-slate-900">Gerelateerd</h2>
-            <ul className="space-y-3">
-              {relatedArticles.map((item) => (
-                <li key={item.id} className="border-b border-slate-100 pb-3 last:border-b-0 last:pb-0">
-                  <Link href={`/artikel/${item.slug}`} className="text-sm font-semibold text-slate-800 hover:text-[#1E3A8A]">
-                    {item.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-        </aside>
+            {/* Lees meer — overlay grid */}
+            {leesmeerArticles.length > 0 ? (
+              <section className="mt-12 border-t border-slate-200 pt-8">
+                <h2 className="mb-5 text-lg font-bold text-slate-900">Lees meer</h2>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {leesmeerArticles.map((item) => (
+                    <Link
+                      key={item.id}
+                      href={`/artikel/${item.slug}`}
+                      className="group relative block h-[220px] overflow-hidden rounded-xl"
+                    >
+                      {item.image_url ? (
+                        <Image
+                          src={item.image_url}
+                          alt={item.title}
+                          fill
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          sizes="(max-width: 640px) 100vw, 50vw"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-slate-300" />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      <span className="absolute bottom-0 left-0 right-0 p-4 text-lg font-bold leading-tight text-white">
+                        {item.title}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+          </article>
+
+          {/* Sidebar */}
+          <aside className="space-y-8">
+            <Sidebar latest={homepageData.latest} bestRead={homepageData.bestRead} />
+          </aside>
+        </div>
       </div>
-    </div>
+
+      {/* Nieuwsbrief balk */}
+      <section className="bg-[#1E3A8A] text-white">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+          <div className="flex items-center gap-4">
+            <Image src="/logo/favicon.png" alt="Nieuwsland" width={48} height={48} />
+            <div>
+              <p className="text-xl font-bold">Meld je aan voor de nieuwsbrief</p>
+              <p className="text-sm text-blue-200">
+                Het belangrijkste nieuws elke dag in je mailbox.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <form className="flex gap-2">
+              <input
+                type="email"
+                placeholder="Jouw e-mailadres"
+                className="rounded-full border border-blue-300/60 bg-white/10 px-4 py-2.5 text-sm text-white outline-none placeholder:text-blue-200 focus:border-orange-300"
+              />
+              <button
+                type="submit"
+                className="rounded-full bg-[#F97316] px-5 py-2.5 text-sm font-bold text-white hover:bg-orange-400 transition-colors"
+              >
+                Aanmelden
+              </button>
+            </form>
+            <div className="hidden items-center gap-2 lg:flex">
+              {["X", "Facebook", "Instagram"].map((name) => (
+                <Link
+                  key={name}
+                  href="#"
+                  className="text-xs font-semibold text-blue-200 hover:text-white transition-colors"
+                >
+                  {name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Tip de redactie */}
+      <section className="bg-slate-50">
+        <div className="mx-auto flex max-w-7xl items-start gap-5 px-4 py-10 sm:px-6 lg:px-8">
+          <span className="text-6xl leading-none text-[#F97316] font-serif">&ldquo;</span>
+          <div>
+            <p className="text-lg font-semibold text-slate-800">
+              Wij zijn altijd op zoek naar het laatste nieuws.
+            </p>
+            <Link
+              href="#"
+              className="mt-1 inline-block text-[#F97316] font-bold hover:underline"
+            >
+              Tip de redactie &raquo;
+            </Link>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
-

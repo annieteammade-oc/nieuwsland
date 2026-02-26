@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -27,6 +28,7 @@ export function Footer() {
 
   return (
     <footer className="mt-16 border-t border-slate-200">
+      {/* Nieuwsbrief balk */}
       <section className="bg-gradient-to-r from-[#1E3A8A] via-[#1E3A8A] to-[#0F245E] text-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-10 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <div>
@@ -38,7 +40,6 @@ export function Footer() {
               Schrijf je in voor de Nieuwsland nieuwsbrief met de grootste verhalen, duiding en video.
             </p>
           </div>
-
           <form className="flex w-full max-w-xl flex-col gap-3 sm:flex-row">
             <input
               type="email"
@@ -55,124 +56,181 @@ export function Footer() {
         </div>
       </section>
 
+      {/* Tip de redactie — prominent with quote icon */}
       <section className="bg-white">
         <div className="mx-auto flex max-w-7xl flex-col items-start gap-4 px-4 py-10 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.08em] text-orange-500">Tip de redactie</p>
-            <p className="mt-2 text-lg font-semibold text-slate-800">
-              Heb je nieuws in jouw buurt? Mail ons via tips@nieuwsland.be
-            </p>
+          <div className="flex items-start gap-4">
+            <span className="text-6xl leading-none text-[#F97316] font-serif">&ldquo;</span>
+            <div>
+              <p className="text-xl font-bold text-slate-900">Tip de redactie</p>
+              <p className="mt-1 text-base text-slate-600">
+                Wij zijn altijd op zoek naar het laatste nieuws. Heb je iets gezien? Laat het ons weten!
+              </p>
+            </div>
           </div>
           <button
             type="button"
             onClick={() => setTipOpen(true)}
-            className="rounded-full bg-slate-900 px-6 py-3 text-sm font-black uppercase tracking-wide text-white transition-all duration-300 hover:scale-105 hover:bg-[#F97316] active:scale-95"
+            className="rounded-full bg-[#F97316] px-8 py-3 text-sm font-bold uppercase tracking-wide text-white transition-all duration-300 hover:scale-105 hover:bg-orange-400 active:scale-95"
           >
             Tip Insturen
           </button>
         </div>
       </section>
 
+      {/* Footer columns with logo */}
       <section className="bg-slate-100">
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
-          {columns.map((column) => (
-            <div key={column.title}>
-              <h3 className="mb-3 text-sm font-black uppercase tracking-[0.08em] text-slate-900">
-                {column.title}
-              </h3>
-              <ul className="space-y-2">
-                {column.items.map((item) => (
-                  <li key={item}>
-                    <Link href="#" className="text-sm text-slate-600 hover:text-[#1E3A8A] hover:underline">
-                      {item}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+          {/* Nieuwsland logo above columns */}
+          <div className="mb-8">
+            <Image src="/logo/favicon.png" alt="Nieuwsland" width={48} height={48} />
+          </div>
+
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {columns.map((column) => (
+              <div key={column.title}>
+                <h3 className="mb-3 text-sm font-black uppercase tracking-[0.08em] text-slate-900">
+                  {column.title}
+                </h3>
+                <ul className="space-y-2">
+                  {column.items.map((item) => (
+                    <li key={item}>
+                      <Link href="#" className="text-sm text-slate-600 hover:text-[#1E3A8A] hover:underline">
+                        {item}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
+
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 border-t border-slate-200 px-4 py-5 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
-            {[
-              { label: "Facebook", href: "#" },
-              { label: "X/Twitter", href: "#" },
-              { label: "Instagram", href: "#" },
-              { label: "LinkedIn", href: "#" },
-              { label: "TikTok", href: "#" },
-            ].map((item) => (
+            {["Facebook", "X/Twitter", "Instagram", "LinkedIn", "TikTok"].map((item) => (
               <Link
-                key={item.label}
-                href={item.href}
+                key={item}
+                href="#"
                 className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600 transition-all duration-300 hover:scale-105 hover:border-[#1E3A8A] hover:text-[#1E3A8A]"
               >
-                {item.label}
+                {item}
               </Link>
             ))}
           </div>
-          <p className="text-xs uppercase tracking-wide text-slate-500">(c) {new Date().getFullYear()} Nieuwsland.be</p>
+          <p className="text-xs uppercase tracking-wide text-slate-500">&copy; {new Date().getFullYear()} Nieuwsland.be</p>
         </div>
       </section>
 
+      {/* Tip de redactie modal — HLN style */}
       {tipOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
           <div className="absolute inset-0" onClick={() => setTipOpen(false)} aria-hidden />
-          <div className="relative z-10 w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-              <p className="text-sm font-bold uppercase tracking-wide text-slate-500">Tip de redactie</p>
+          <div className="relative z-10 w-full max-w-2xl overflow-y-auto max-h-[90vh] rounded-2xl bg-white shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+              <h2 className="text-lg font-bold text-slate-900">België deelt nieuws, tips en video&apos;s</h2>
               <button
                 type="button"
                 onClick={() => setTipOpen(false)}
-                className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600 transition-all duration-300 hover:scale-105 hover:border-slate-400 hover:text-slate-900"
+                className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
               >
-                Sluiten
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
-            <form className="grid gap-4 px-5 py-6">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="text-sm font-semibold text-slate-700">
-                  Naam
-                  <input
-                    type="text"
-                    className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm text-slate-700 outline-none focus:border-[#1E3A8A]"
-                  />
-                </label>
-                <label className="text-sm font-semibold text-slate-700">
-                  Email
-                  <input
-                    type="email"
-                    className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm text-slate-700 outline-none focus:border-[#1E3A8A]"
-                  />
-                </label>
-              </div>
-              <label className="text-sm font-semibold text-slate-700">
-                Onderwerp
-                <input
-                  type="text"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm text-slate-700 outline-none focus:border-[#1E3A8A]"
-                />
-              </label>
-              <label className="text-sm font-semibold text-slate-700">
-                Bericht
+
+            <form className="px-6 py-6 space-y-5">
+              <p className="text-sm text-slate-600">
+                Deel jouw verhaal met de redactie van Nieuwsland. Hebben we nog een vraag over het hoofd gezien bij een artikel? Laat het ons hier weten (vergeet niet te vermelden over welk artikel het gaat).
+              </p>
+
+              {/* Textarea */}
+              <div>
                 <textarea
                   rows={4}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm text-slate-700 outline-none focus:border-[#1E3A8A]"
+                  placeholder="Geef hier een korte beschrijving..."
+                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
                 />
-              </label>
-              <label className="text-sm font-semibold text-slate-700">
-                Bestand (optioneel)
+              </div>
+
+              {/* Upload */}
+              <div className="flex items-center justify-center rounded-xl border-2 border-dashed border-slate-300 p-6">
+                <label className="flex cursor-pointer items-center gap-2 rounded-full bg-[#F97316] px-5 py-2.5 text-sm font-bold text-white hover:bg-orange-400 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  Uploaden
+                  <input type="file" className="hidden" />
+                </label>
+              </div>
+
+              {/* Name fields */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="text-sm font-semibold text-slate-700">
+                    Voornaam <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-slate-700">
+                    Achternaam <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
+                  />
+                </div>
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="text-sm font-semibold text-slate-700">
+                  E-mail <span className="text-red-500">*</span>
+                </label>
                 <input
-                  type="file"
-                  className="mt-2 w-full rounded-2xl border border-dashed border-slate-300 px-4 py-2 text-sm text-slate-600"
+                  type="email"
+                  required
+                  className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
                 />
-              </label>
+              </div>
+
+              {/* Locatie + Telefoon */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="text-sm font-semibold text-slate-700">Locatie</label>
+                  <input
+                    type="text"
+                    className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-slate-700">Telefoonnummer</label>
+                  <input
+                    type="tel"
+                    className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
+                  />
+                </div>
+              </div>
+
+              {/* Submit */}
               <button
                 type="submit"
-                className="w-full rounded-full bg-[#1E3A8A] px-5 py-3 text-sm font-black uppercase tracking-wide text-white transition-all duration-300 hover:scale-[1.01] hover:bg-[#F97316] active:scale-95"
+                className="w-full rounded-full bg-[#F97316] py-3 text-sm font-bold uppercase tracking-wide text-white transition-all duration-300 hover:bg-orange-400 active:scale-[0.98]"
               >
-                Verstuur Tip
+                Verstuur je tip
               </button>
-              <p className="text-xs text-slate-500">Liever mailen? tips@nieuwsland.be</p>
+
+              <p className="text-center text-xs text-slate-500">
+                Liever mailen? tips@nieuwsland.be
+              </p>
             </form>
           </div>
         </div>

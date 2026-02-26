@@ -483,12 +483,15 @@ def generate_article_image(title, category, excerpt=None):
         print("⚠️ No OpenAI API key, skipping image generation")
         return None
     
-    # Build a prompt for a news article header image
+    # Build a prompt for a photorealistic news header image
     prompt = (
-        f"Professional photojournalistic header image for a Belgian news article. "
-        f"Category: {category}. Topic: {title[:100]}. "
-        f"Style: clean, modern, editorial photography. No text or logos. "
-        f"Wide format (16:9), high quality, suitable for a news website header."
+        f"Ultra-realistic editorial photograph for a premium Belgian news website. "
+        f"Category: {category}. Subject: {title[:100]}. "
+        f"Shot by a professional photojournalist with a Canon EOS R5, 35mm lens, f/2.8. "
+        f"Natural lighting, sharp focus, authentic colors. Looks like a real Reuters/AP press photo. "
+        f"Absolutely NO illustration, NO cartoon, NO digital art, NO AI-looking artifacts. "
+        f"No text, no logos, no watermarks. Wide format 16:9. "
+        f"The image must be indistinguishable from a real photograph."
     )
     
     data = {

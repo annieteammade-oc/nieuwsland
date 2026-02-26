@@ -114,7 +114,7 @@ export async function getRelatedArticles(article: Article): Promise<Article[]> {
     .filter(
       (item) => item.id !== article.id && item.category?.slug === article.category?.slug,
     )
-    .slice(0, 4);
+    .slice(0, 5);
 }
 
 export async function searchArticles(term: string): Promise<Article[]> {

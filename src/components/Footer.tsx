@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 
 const columns = [
   {
@@ -49,6 +49,28 @@ const columns = [
 
 export function Footer() {
   const [tipOpen, setTipOpen] = useState(false);
+  const [tipForm, setTipForm] = useState({ message: "", firstName: "", lastName: "", email: "", location: "", phone: "" });
+  const [tipStatus, setTipStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  async function handleTipSubmit(e: FormEvent) {
+    e.preventDefault();
+    setTipStatus("sending");
+    try {
+      const res = await fetch("/api/tip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(tipForm),
+      });
+      if (res.ok) {
+        setTipStatus("sent");
+        setTipForm({ message: "", firstName: "", lastName: "", email: "", location: "", phone: "" });
+      } else {
+        setTipStatus("error");
+      }
+    } catch {
+      setTipStatus("error");
+    }
+  }
 
   return (
     <footer className="mt-16 border-t border-slate-200">
@@ -168,7 +190,7 @@ export function Footer() {
               </button>
             </div>
 
-            <form className="px-6 py-6 space-y-5">
+            <form className="px-6 py-6 space-y-5" onSubmit={handleTipSubmit}>
               <p className="text-sm text-slate-600 leading-relaxed">
                 Heb jij een tip, een nieuwswaardig feit of een video die je wenst te delen met de rest van de wereld? Bezorg het hier aan onze redactie! Laat het hier weten en help Nieuwsland mee het nieuws te brengen.
               </p>
@@ -181,6 +203,9 @@ export function Footer() {
                 <textarea
                   rows={4}
                   placeholder="Geef hier een korte beschrijving..."
+                  value={tipForm.message}
+                  onChange={(e) => setTipForm({ ...tipForm, message: e.target.value })}
+                  required
                   className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
                 />
               </div>
@@ -205,6 +230,8 @@ export function Footer() {
                   <input
                     type="text"
                     required
+                    value={tipForm.firstName}
+                    onChange={(e) => setTipForm({ ...tipForm, firstName: e.target.value })}
                     className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
                   />
                 </div>
@@ -215,6 +242,8 @@ export function Footer() {
                   <input
                     type="text"
                     required
+                    value={tipForm.lastName}
+                    onChange={(e) => setTipForm({ ...tipForm, lastName: e.target.value })}
                     className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
                   />
                 </div>
@@ -228,6 +257,8 @@ export function Footer() {
                 <input
                   type="email"
                   required
+                  value={tipForm.email}
+                  onChange={(e) => setTipForm({ ...tipForm, email: e.target.value })}
                   className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
                 />
               </div>
@@ -238,6 +269,8 @@ export function Footer() {
                   <label className="text-sm font-semibold text-slate-700">Locatie</label>
                   <input
                     type="text"
+                    value={tipForm.location}
+                    onChange={(e) => setTipForm({ ...tipForm, location: e.target.value })}
                     className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
                   />
                 </div>
@@ -245,21 +278,34 @@ export function Footer() {
                   <label className="text-sm font-semibold text-slate-700">Telefoonnummer</label>
                   <input
                     type="tel"
+                    value={tipForm.phone}
+                    onChange={(e) => setTipForm({ ...tipForm, phone: e.target.value })}
                     className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
                   />
                 </div>
               </div>
 
               {/* Submit */}
-              <button
-                type="submit"
-                className="w-full rounded-full bg-[#F97316] py-3 text-sm font-bold uppercase tracking-wide text-white transition-all duration-300 hover:bg-orange-400 active:scale-[0.98]"
-              >
-                Verstuur je tip
-              </button>
+              {tipStatus === "sent" ? (
+                <div className="rounded-xl bg-green-50 border border-green-200 p-4 text-center">
+                  <p className="text-sm font-semibold text-green-800">✅ Bedankt! Je tip is ontvangen.</p>
+                  <button type="button" onClick={() => { setTipStatus("idle"); setTipOpen(false); }} className="mt-2 text-xs text-green-600 underline">Sluiten</button>
+                </div>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={tipStatus === "sending"}
+                  className="w-full rounded-full bg-[#F97316] py-3 text-sm font-bold uppercase tracking-wide text-white transition-all duration-300 hover:bg-orange-400 active:scale-[0.98] disabled:opacity-50"
+                >
+                  {tipStatus === "sending" ? "Bezig met versturen..." : "Verstuur je tip"}
+                </button>
+              )}
+              {tipStatus === "error" ? (
+                <p className="text-center text-xs text-red-500">Er ging iets mis. Probeer het opnieuw of mail naar redactie@nieuwsland.be</p>
+              ) : null}
 
               <p className="text-center text-xs text-slate-500">
-                Liever mailen? tips@nieuwsland.be
+                Liever mailen? redactie@nieuwsland.be
               </p>
             </form>
           </div>

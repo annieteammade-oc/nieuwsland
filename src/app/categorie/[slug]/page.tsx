@@ -56,7 +56,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
         <section>
           {articles.length ? (
-            <ArticleGrid articles={articles} columns={3} />
+            <ArticleGrid articles={articles} columns={2} />
           ) : (
             <p className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-600 shadow-sm">
               Nog geen artikels in deze categorie.

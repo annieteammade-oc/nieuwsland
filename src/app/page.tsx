@@ -156,7 +156,7 @@ export default async function HomePage() {
 
       <section className="mt-10">
         <SectionTitle title="Nieuws van Vandaag" subtitle="Laatste updates" />
-        <ArticleGrid articles={data.latest.slice(0, 9)} columns={3} />
+        <ArticleGrid articles={data.latest.slice(0, 9)} columns={2} />
       </section>
 
       <section className="mt-10">
@@ -171,27 +171,27 @@ export default async function HomePage() {
 
       <section className="mt-10">
         <SectionTitle title="Sportnieuws" subtitle="Highlights van de sportredactie" />
-        <ArticleGrid articles={sportItems} columns={3} />
+        <ArticleGrid articles={sportItems} columns={2} />
       </section>
 
       <section className="mt-10">
         <SectionTitle title="Actualiteit" subtitle="Binnenland en buitenland" />
-        <ArticleGrid articles={actualiteitItems} columns={3} />
+        <ArticleGrid articles={actualiteitItems} columns={2} />
       </section>
 
       <section className="mt-10">
         <SectionTitle title="Tech News" subtitle="Innovatie en digitale trends" />
-        <ArticleGrid articles={techItems} columns={3} />
+        <ArticleGrid articles={techItems} columns={2} />
       </section>
 
       <section className="mt-10">
         <SectionTitle title="Politiek Nieuws" subtitle="Beslissingen en debatten" />
-        <ArticleGrid articles={politiekItems} columns={3} />
+        <ArticleGrid articles={politiekItems} columns={2} />
       </section>
 
       <section className="mt-10">
         <SectionTitle title="Cultuur & Entertainment" subtitle="Kunst, media en muziek" />
-        <ArticleGrid articles={cultuurItems} columns={3} />
+        <ArticleGrid articles={cultuurItems} columns={2} />
       </section>
 
       <section className="mt-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">

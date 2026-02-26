@@ -102,15 +102,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               </span>
             </div>
 
-            <h1 className="text-3xl font-black uppercase leading-tight tracking-tight text-slate-900 sm:text-5xl">
+            <h1 className="text-2xl font-black leading-tight tracking-tight text-slate-900 sm:text-3xl">
               {article.title}
             </h1>
 
             {article.excerpt ? (
-              <div
-                className="mt-5 text-lg leading-8 text-slate-700"
-                dangerouslySetInnerHTML={{ __html: marked(article.excerpt) as string }}
-              />
+              <p className="text-lg text-slate-600 mt-3 leading-relaxed">
+                {article.excerpt}
+              </p>
             ) : null}
 
             <div

@@ -463,6 +463,94 @@ def wp_publish(title, content, category=None, tags=None, featured_image_url=None
 
 
 # ============================================================
+# IMAGE GENERATION (OpenAI DALL-E 3)
+# ============================================================
+
+def get_openai_key():
+    if "openai" not in _creds_cache:
+        env_path = os.path.join(_workspace(), ".env")
+        with open(env_path) as f:
+            for line in f:
+                if line.startswith("OPENAI_API_KEY="):
+                    _creds_cache["openai"] = line.split("=", 1)[1].strip()
+    return _creds_cache.get("openai")
+
+def generate_article_image(title, category, excerpt=None):
+    """Generate a header image for an article using OpenAI DALL-E 3.
+    Returns the image URL or None."""
+    api_key = get_openai_key()
+    if not api_key:
+        print("⚠️ No OpenAI API key, skipping image generation")
+        return None
+    
+    # Build a prompt for a news article header image
+    prompt = (
+        f"Professional photojournalistic header image for a Belgian news article. "
+        f"Category: {category}. Topic: {title[:100]}. "
+        f"Style: clean, modern, editorial photography. No text or logos. "
+        f"Wide format (16:9), high quality, suitable for a news website header."
+    )
+    
+    data = {
+        "model": "dall-e-3",
+        "prompt": prompt,
+        "n": 1,
+        "size": "1792x1024",
+        "quality": "standard",
+    }
+    
+    body = json.dumps(data).encode()
+    req = urllib.request.Request(
+        "https://api.openai.com/v1/images/generations",
+        data=body,
+        method="POST",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+    )
+    
+    try:
+        resp = urllib.request.urlopen(req, context=ctx, timeout=60)
+        result = json.loads(resp.read())
+        image_url = result["data"][0]["url"]
+        print(f"🖼️ Image generated for: {title[:50]}...")
+        return image_url
+    except Exception as e:
+        print(f"Image generation error: {e}")
+        return None
+
+def upload_image_to_supabase(image_url, filename):
+    """Download image from URL and upload to Supabase Storage.
+    Returns the public URL or the original URL if upload fails."""
+    sb = get_supabase_creds()
+    
+    try:
+        # Download image
+        req = urllib.request.Request(image_url, headers={"User-Agent": "Nieuwsland/1.0"})
+        resp = urllib.request.urlopen(req, context=ctx, timeout=30)
+        image_data = resp.read()
+        content_type = resp.headers.get("Content-Type", "image/png")
+        
+        # Upload to Supabase Storage (bucket: article-images)
+        upload_url = f"{sb['url']}/storage/v1/object/article-images/{filename}"
+        upload_req = urllib.request.Request(upload_url, data=image_data, method="POST", headers={
+            "apikey": sb["key"],
+            "Authorization": f"Bearer {sb['key']}",
+            "Content-Type": content_type,
+            "x-upsert": "true",
+        })
+        urllib.request.urlopen(upload_req, context=ctx, timeout=30)
+        
+        # Return public URL
+        public_url = f"{sb['url']}/storage/v1/object/public/article-images/{filename}"
+        return public_url
+    except Exception as e:
+        print(f"Image upload error: {e}, using original URL")
+        return image_url
+
+
+# ============================================================
 # SUPABASE API
 # ============================================================
 
@@ -557,6 +645,19 @@ def supabase_publish(title, content, category_slug, excerpt=None, image_url=None
             print(f"✅ Quality gate passed: {title}")
         except ImportError:
             print("⚠️ quality_gate.py not found, publishing without checks")
+    
+    # Generate image if none provided
+    if not image_url:
+        try:
+            cat_name = category_slug or "nieuws"
+            generated_url = generate_article_image(title, cat_name, excerpt)
+            if generated_url:
+                # Upload to Supabase Storage for permanent hosting
+                safe_slug = _re.sub(r'[^a-z0-9]', '-', title.lower()[:50])
+                filename = f"{safe_slug}-{hashlib.md5(title.encode()).hexdigest()[:8]}.png"
+                image_url = upload_image_to_supabase(generated_url, filename)
+        except Exception as e:
+            print(f"Image generation skipped: {e}")
     
     # Generate slug from title
     slug = title.lower().strip()

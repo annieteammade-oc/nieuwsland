@@ -154,11 +154,21 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             {/* Divider */}
             <hr className="my-6 border-slate-200" />
 
-            {/* Body text */}
+            {/* Body text — strip excerpt from start to avoid duplication */}
             <div
               className="prose max-w-none text-slate-800"
               style={{ fontSize: "18px", lineHeight: "27px" }}
-              dangerouslySetInnerHTML={{ __html: marked(article.content ?? "") as string }}
+              dangerouslySetInnerHTML={{
+                __html: (() => {
+                  let body = article.content ?? "";
+                  if (article.excerpt) {
+                    // Strip excerpt from beginning of content (may be bold/paragraph wrapped)
+                    const esc = article.excerpt.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                    body = body.replace(new RegExp(`^\\s*\\**${esc}\\**\\s*`, "i"), "");
+                  }
+                  return marked(body) as string;
+                })(),
+              }}
             />
 
             {/* Ook interessant voor jou */}

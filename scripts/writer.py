@@ -121,6 +121,8 @@ STRUCTUUR (verplicht):
 - Eindig met ## Wat nu? of ## Vooruitblik
 
 REGELS:
+- De lead MOET de 5 W's beantwoorden: Wie, Wat, Waar, Wanneer, Waarom/Hoe
+- Ontbrekende kerninfo (datums, namen, locaties) ALTIJD opzoeken in de bron — NOOIT weglaten
 - Schrijf een COMPLEET artikel (400-800 woorden)
 - Korte alinea's (MAX 3 zinnen, NOOIT een wall of text)
 - Wissel af: paragraaf → subtitel → bullets → paragraaf → quote

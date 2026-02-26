@@ -1,0 +1,253 @@
+"""
+Nieuwsland.be — Writer Agent
+Pakt een topic uit de Sheet (status=NIEUW, score>=4), schrijft een volledig artikel,
+post in Discord #categorie + #review-queue.
+Draait via cron elke 4 uur.
+"""
+
+import sys, os, json, re, time
+sys.path.insert(0, os.path.dirname(__file__))
+from utils import (
+    discord_send, log, llm_generate, sheets_read, sheets_update,
+    now_str, hash_url
+)
+
+SHEET_ID_FILE = os.path.join(os.path.dirname(__file__), "sheet-id.json")
+ARTICLES_FILE = os.path.join(os.path.dirname(__file__), "articles-written.json")
+
+# Models per category (Dennis's choices + defaults)
+CATEGORY_MODELS = {
+    "tech": "google/gemini-2.5-flash",
+    "belgium": "google/gemini-2.5-flash",
+    "sport": "google/gemini-2.5-flash",
+    "world": "google/gemini-2.5-flash",
+    "science": "google/gemini-2.5-flash",
+    "economy": "google/gemini-2.5-flash",
+    "politics": "google/gemini-2.5-flash",
+    "culture": "google/gemini-2.5-flash",
+    "regional": "google/gemini-2.5-flash",
+}
+
+def get_sheet_id():
+    if os.path.exists(SHEET_ID_FILE):
+        with open(SHEET_ID_FILE) as f:
+            return json.load(f).get("id")
+    return None
+
+def load_articles():
+    if os.path.exists(ARTICLES_FILE):
+        with open(ARTICLES_FILE) as f:
+            return json.load(f)
+    return []
+
+def save_article(article):
+    articles = load_articles()
+    articles.append(article)
+    with open(ARTICLES_FILE, "w") as f:
+        json.dump(articles, f, indent=2, ensure_ascii=False)
+
+def fetch_source(url):
+    """Fetch source article text for rewriting"""
+    import urllib.request, ssl
+    ctx = ssl.create_default_context()
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"})
+        resp = urllib.request.urlopen(req, context=ctx, timeout=15)
+        html = resp.read().decode("utf-8", errors="replace")
+        # Strip HTML tags (basic)
+        text = re.sub(r'<script[^>]*>.*?</script>', '', html, flags=re.DOTALL)
+        text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL)
+        text = re.sub(r'<[^>]+>', ' ', text)
+        text = re.sub(r'\s+', ' ', text).strip()
+        return text[:5000]  # Max 5000 chars to save tokens
+    except Exception as e:
+        print(f"Fetch error for {url}: {e}")
+        return None
+
+def pick_topic():
+    """Pick best available topic from Sheet (NIEUW, highest score)"""
+    sheet_id = get_sheet_id()
+    if not sheet_id:
+        print("No Sheet ID")
+        return None, None
+    
+    rows = sheets_read(sheet_id, "Topics!A:J")
+    if not rows:
+        return None, None
+    
+    # Find best NIEUW topic (highest score first)
+    best = None
+    best_row = None
+    for i, row in enumerate(rows):
+        if len(row) < 8:
+            continue
+        status = row[7] if len(row) > 7 else ""
+        if status != "NIEUW":
+            continue
+        score = int(row[5]) if len(row) > 5 and row[5].isdigit() else 3
+        if best is None or score > best.get("score", 0):
+            best = {
+                "row_index": i + 1,  # 1-indexed for Sheets
+                "found_at": row[0],
+                "category": row[1],
+                "source": row[2],
+                "title": row[3],
+                "link": row[4],
+                "score": score,
+                "reden": row[6] if len(row) > 6 else "",
+            }
+            best_row = i + 1
+    
+    return best, best_row
+
+def write_article(topic):
+    """Write a full article based on topic"""
+    # Fetch source for context
+    source_text = fetch_source(topic["link"])
+    source_context = f"\n\nBrontekst (ter referentie):\n{source_text}" if source_text else ""
+    
+    model = CATEGORY_MODELS.get(topic["category"], "google/gemini-2.5-flash")
+    
+    system = """Je bent een ervaren journalist bij Nieuwsland.be, een Belgische nieuwssite.
+Je schrijft in het Nederlands, gericht op een Belgisch publiek.
+
+REGELS:
+- Schrijf een COMPLEET artikel (400-800 woorden)
+- Gebruik **vette tekst** voor belangrijke termen
+- Gebruik *cursief* voor nadruk
+- Gebruik bullets (•) waar nuttig
+- Begin met een pakkende intro (2-3 zinnen)
+- Eindig met een conclusie of vooruitblik
+- Schrijf in een toegankelijke, journalistieke stijl
+- HERSCHRIJF volledig — NOOIT copy-paste van bron
+- Vermeld de bron subtiel in het artikel
+- Voeg suggesties toe voor een passende afbeelding (beschrijving)
+
+OUTPUT FORMAT (exact):
+TITEL: [pakkende titel]
+SUBTITEL: [korte subtitel]
+TAGS: [tag1, tag2, tag3]
+AFBEELDING: [beschrijving van gewenste header afbeelding]
+
+---
+
+[artikel tekst met **bold**, *cursief*, bullets etc.]
+
+---
+
+*Bron: [bronvermelding]*"""
+
+    prompt = f"""Schrijf een artikel over dit onderwerp:
+
+Titel: {topic['title']}
+Categorie: {topic['category']}
+Bron: {topic['source']}
+URL: {topic['link']}{source_context}"""
+
+    result = llm_generate(prompt, model=model, system=system, max_tokens=3000, temperature=0.7)
+    return result
+
+def post_to_discord(topic, article_text):
+    """Post article to category channel + review-queue with full article as file"""
+    category = topic["category"]
+    
+    # Post in category channel — full article (discord_send auto-splits if >2000)
+    discord_send(category, f"📝 **Nieuw artikel geschreven**\n\n{article_text}")
+    
+    time.sleep(1)
+    
+    # Parse metadata from article text
+    import re as _re
+    titel_m = _re.search(r'TITEL:\s*(.+)', article_text)
+    subtitel_m = _re.search(r'SUBTITEL:\s*(.+)', article_text)
+    tags_m = _re.search(r'TAGS:\s*(.+)', article_text)
+    afbeelding_m = _re.search(r'AFBEELDING:\s*(.+)', article_text)
+    
+    titel = titel_m.group(1).strip() if titel_m else topic['title']
+    subtitel = subtitel_m.group(1).strip() if subtitel_m else ""
+    tags = tags_m.group(1).strip() if tags_m else ""
+    afbeelding = afbeelding_m.group(1).strip() if afbeelding_m else ""
+    
+    # Review-queue: metadata as message, full article as .txt attachment
+    review_header = (
+        f"📋 REVIEW NODIG — {category.upper()} artikel\n"
+        f"Topic: {topic['title']}\n"
+        f"Bron: {topic['source']}\n"
+        f"Score: {'⭐️' * topic.get('score', 3)}\n"
+        f"TITEL: {titel}\n"
+        f"SUBTITEL: {subtitel}\n"
+        f"TAGS: {tags}\n"
+        f"AFBEELDING: {afbeelding}\n\n"
+        f"---\n"
+        f"✅ = Goedkeuren & publiceren op WordPress\n"
+        f"❌ = Afwijzen (geef feedback als reply)"
+    )
+    
+    result = discord_send("review-queue", review_header,
+                         file_content=article_text,
+                         filename=f"artikel-{category}-{hash_url(topic['link'])}.txt")
+    return result
+
+def update_sheet_status(row_index, status, writer="Writer Agent"):
+    """Update topic status in Sheet"""
+    sheet_id = get_sheet_id()
+    if not sheet_id:
+        return
+    sheets_update(sheet_id, f"Topics!H{row_index}:I{row_index}", [[status, writer]])
+
+def run(max_articles=2):
+    """Main writer run — pick topics and write articles"""
+    print(f"[{now_str()}] Writer agent gestart")
+    log("Writer", "📝 Writer agent gestart — zoek topics om te schrijven")
+    
+    written = 0
+    for _ in range(max_articles):
+        topic, row_index = pick_topic()
+        if not topic:
+            print("Geen topics beschikbaar")
+            break
+        
+        print(f"Schrijf artikel over: {topic['title']}")
+        
+        # Mark as IN_PROGRESS
+        if row_index:
+            update_sheet_status(row_index, "SCHRIJVEN")
+        
+        # Write article
+        article = write_article(topic)
+        if not article:
+            print(f"Artikel schrijven mislukt voor: {topic['title']}")
+            if row_index:
+                update_sheet_status(row_index, "MISLUKT")
+            continue
+        
+        # Post to Discord
+        result = post_to_discord(topic, article)
+        
+        # Update Sheet
+        if row_index:
+            update_sheet_status(row_index, "REVIEW")
+        
+        # Save locally
+        save_article({
+            "topic": topic,
+            "article": article[:500] + "...",
+            "discord_msg_id": result.get("id") if result else None,
+            "written_at": now_str(),
+            "status": "REVIEW",
+        })
+        
+        written += 1
+        log("Writer", f"✅ Artikel geschreven: **{topic['title']}** → #review-queue")
+        
+        time.sleep(2)  # Rate limit
+    
+    if written == 0:
+        log("Writer", "ℹ️ Geen nieuwe topics om over te schrijven")
+    else:
+        log("Writer", f"✅ {written} artikel(en) geschreven en naar review gestuurd")
+    
+    print(f"Writer klaar: {written} artikelen geschreven")
+
+if __name__ == "__main__":
+    run()

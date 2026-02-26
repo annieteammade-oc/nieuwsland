@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trivia Spel</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #111827;
+    color: #fff;
+    min-height: 100vh;
+  }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 16px; }
+
+  /* HEADER */
+  .header { text-align: center; padding: 32px 0 24px; }
+  .header h1 { font-size: 3rem; font-weight: 900; color: #34d399; margin-bottom: 8px; }
+  .header p { font-size: 1.1rem; color: #9ca3af; }
+
+  /* CARDS */
+  .card {
+    background: #1f2937;
+    border: 2px solid #374151;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+
+  .card h2 { font-size: 1.4rem; font-weight: 700; color: #34d399; margin-bottom: 16px; }
+
+  /* BUTTONS */
+  .btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .btn-grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .btn-grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+  .btn {
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: 2px solid #4b5563;
+    background: #374151;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .btn:hover { border-color: #34d399; background: #2d3748; }
+  .btn.active { background: #34d399; color: #111827; border-color: #34d399; }
+
+  .btn-primary {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 1.2rem;
+    font-weight: 900;
+    background: #34d399;
+    color: #111827;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .btn-primary:hover { background: #6ee7b7; }
+
+  /* ANSWER OPTIONS */
+  .options { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+  
+  .option-btn {
+    width: 100%;
+    padding: 16px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    border: 2px solid #4b5563;
+    background: #374151;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .option-btn:hover:not(.disabled) { border-color: #34d399; background: #2d3748; }
+  .option-btn.selected { background: #34d399; color: #111827; border-color: #34d399; }
+  .option-btn.correct { background: #34d399; color: #111827; border-color: #34d399; }
+  .option-btn.wrong { background: #ef4444; color: #fff; border-color: #ef4444; }
+  .option-btn.dimmed { background: #2d3748; color: #6b7280; border-color: #374151; }
+  .option-btn.disabled { cursor: default; }
+
+  .option-letter { font-weight: 900; margin-right: 12px; }
+  .option-check { font-size: 1.2rem; }
+
+  /* PROGRESS */
+  .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .top-bar span { font-weight: 700; color: #34d399; font-size: 1.05rem; }
+  
+  .progress-bar { width: 100%; height: 6px; background: #374151; border-radius: 3px; margin-bottom: 24px; }
+  .progress-fill { height: 100%; background: #34d399; border-radius: 3px; transition: width 0.3s; }
+
+  .category-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    background: #34d399;
+    color: #111827;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .question-text { font-size: 1.35rem; font-weight: 700; line-height: 1.5; margin-bottom: 24px; }
+
+  /* RESULTS */
+  .score-big { font-size: 4rem; font-weight: 900; color: #34d399; margin-bottom: 8px; }
+  .score-pct { font-size: 1.5rem; font-weight: 700; margin-bottom: 16px; }
+  .score-msg { font-size: 1.2rem; margin-bottom: 32px; }
+
+  .result-item {
+    padding: 16px;
+    border-radius: 12px;
+    border: 2px solid;
+    margin-bottom: 12px;
+    text-align: left;
+  }
+  .result-item.correct { border-color: #34d399; background: rgba(52,211,153,0.1); }
+  .result-item.wrong { border-color: #ef4444; background: rgba(239,68,68,0.1); }
+  .result-item .q { font-weight: 600; margin-bottom: 6px; }
+  .result-item .a { font-size: 0.9rem; }
+  .result-item .a.green { color: #34d399; }
+  .result-item .a.red { color: #ef4444; }
+
+  /* SCOREBOARD */
+  .scoreboard { margin-top: 24px; }
+  .scoreboard h3 { font-size: 1.1rem; font-weight: 700; color: #34d399; margin-bottom: 12px; }
+  .score-table { width: 100%; border-collapse: collapse; }
+  .score-table th, .score-table td { padding: 10px 12px; text-align: left; font-size: 0.9rem; }
+  .score-table th { color: #9ca3af; border-bottom: 2px solid #374151; font-weight: 600; }
+  .score-table td { border-bottom: 1px solid #2d3748; }
+  .score-table tr:hover td { background: rgba(52,211,153,0.05); }
+  .rank-1 { color: #fbbf24; font-weight: 900; }
+  .rank-2 { color: #d1d5db; font-weight: 700; }
+  .rank-3 { color: #d97706; font-weight: 700; }
+
+  /* NAME INPUT */
+  .name-input {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: 2px solid #4b5563;
+    background: #374151;
+    color: #fff;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: 600;
+    margin-bottom: 16px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .name-input:focus { border-color: #34d399; }
+  .name-input::placeholder { color: #6b7280; }
+
+  /* SPINNER */
+  .spinner {
+    width: 48px; height: 48px;
+    border: 4px solid #34d399;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .text-center { text-align: center; }
+  .mt-16 { margin-top: 16px; }
+  .mb-8 { margin-bottom: 8px; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+  .tab {
+    padding: 8px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border: 2px solid #4b5563;
+    background: #374151;
+    color: #9ca3af;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .tab.active { background: #34d399; color: #111827; border-color: #34d399; }
+
+  .empty-state { text-align: center; padding: 32px; color: #6b7280; font-size: 0.95rem; }
+
+  @media (max-width: 500px) {
+    .btn-grid { grid-template-columns: repeat(2, 1fr); }
+    .btn-grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .header h1 { font-size: 2.2rem; }
+    .question-text { font-size: 1.15rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="app"></div>
+
+<script>
+// ============================================================
+// QUESTIONS DATABASE - 100 vragen in het Nederlands
+// ============================================================
+const QUESTIONS_DB = [
+  // WETENSCHAP
+  {c:"Wetenschap",q:"Wat is het chemische symbool voor goud?",o:["Au","Ag","Go","Gd"],a:0,d:"makkelijk"},
+  {c:"Wetenschap",q:"Hoeveel botten heeft een volwassen mens?",o:["206","201","215","196"],a:0,d:"gemiddeld"},
+  {c:"Wetenschap",q:"Welk gas maakt het grootste deel uit van de atmosfeer?",o:["Zuurstof","Stikstof","Koolstofdioxide","Waterstof"],a:1,d:"makkelijk"},
+  {c:"Wetenschap",q:"Wat is de snelheid van het licht (afgerond)?",o:["300.000 km/s","150.000 km/s","500.000 km/s","1.000.000 km/s"],a:0,d:"gemiddeld"},
+  {c:"Wetenschap",q:"Welk orgaan produceert insuline?",o:["Lever","Alvleesklier","Nieren","Milt"],a:1,d:"gemiddeld"},
+  {c:"Wetenschap",q:"Wat is het hardste natuurlijke materiaal?",o:["Kwarts","Staal","Diamant","Saffier"],a:2,d:"makkelijk"},
+  {c:"Wetenschap",q:"Hoeveel chromosomen heeft een menselijke cel?",o:["44","46","48","42"],a:1,d:"moeilijk"},
+  {c:"Wetenschap",q:"Welk deeltje heeft een negatieve lading?",o:["Proton","Neutron","Elektron","Foton"],a:2,d:"makkelijk"},
+  {c:"Wetenschap",q:"Wat is de chemische formule van water?",o:["HO","H2O","H2O2","OH2"],a:1,d:"makkelijk"},
+  {c:"Wetenschap",q:"Welke vitamine wordt aangemaakt door zonlicht?",o:["Vitamine A","Vitamine B","Vitamine C","Vitamine D"],a:3,d:"gemiddeld"},
+
+  // GESCHIEDENIS
+  {c:"Geschiedenis",q:"In welk jaar viel de Berlijnse Muur?",o:["1987","1989","1991","1985"],a:1,d:"makkelijk"},
+  {c:"Geschiedenis",q:"Wie was de eerste mens op de maan?",o:["Buzz Aldrin","Yuri Gagarin","Neil Armstrong","John Glenn"],a:2,d:"makkelijk"},
+  {c:"Geschiedenis",q:"In welk jaar begon de Eerste Wereldoorlog?",o:["1912","1914","1916","1918"],a:1,d:"makkelijk"},
+  {c:"Geschiedenis",q:"Welk land ontdekte Columbus in 1492?",o:["India","Noord-Amerika","Zuid-Amerika","De Caraïben"],a:3,d:"gemiddeld"},
+  {c:"Geschiedenis",q:"Wie schilderde het plafond van de Sixtijnse Kapel?",o:["Leonardo da Vinci","Rafaël","Michelangelo","Donatello"],a:2,d:"makkelijk"},
+  {c:"Geschiedenis",q:"In welk jaar werd België onafhankelijk?",o:["1815","1830","1839","1848"],a:1,d:"gemiddeld"},
+  {c:"Geschiedenis",q:"Welke beschaving bouwde Machu Picchu?",o:["Maya's","Azteken","Inca's","Olmeken"],a:2,d:"gemiddeld"},
+  {c:"Geschiedenis",q:"Wie schreef het Communistisch Manifest?",o:["Lenin","Stalin","Marx & Engels","Trotski"],a:2,d:"gemiddeld"},
+  {c:"Geschiedenis",q:"Wanneer eindigde de Tweede Wereldoorlog in Europa?",o:["1944","1945","1946","1943"],a:1,d:"makkelijk"},
+  {c:"Geschiedenis",q:"Welke Egyptische koningin had een relatie met Julius Caesar?",o:["Nefertiti","Hatshepsut","Cleopatra","Nefertari"],a:2,d:"makkelijk"},
+
+  // AARDRIJKSKUNDE
+  {c:"Aardrijkskunde",q:"Wat is de hoofdstad van Australië?",o:["Sydney","Melbourne","Canberra","Perth"],a:2,d:"gemiddeld"},
+  {c:"Aardrijkskunde",q:"Welke rivier is de langste ter wereld?",o:["Amazone","Nijl","Mississippi","Yangtze"],a:1,d:"gemiddeld"},
+  {c:"Aardrijkskunde",q:"In welk land ligt de Mount Everest?",o:["India","China","Nepal","Tibet"],a:2,d:"makkelijk"},
+  {c:"Aardrijkskunde",q:"Hoeveel continenten zijn er?",o:["5","6","7","8"],a:2,d:"makkelijk"},
+  {c:"Aardrijkskunde",q:"Wat is het kleinste land ter wereld?",o:["Monaco","San Marino","Vaticaanstad","Liechtenstein"],a:2,d:"gemiddeld"},
+  {c:"Aardrijkskunde",q:"Welke oceaan is de grootste?",o:["Atlantische","Indische","Stille","Arctische"],a:2,d:"makkelijk"},
+  {c:"Aardrijkskunde",q:"Wat is de hoofdstad van Canada?",o:["Toronto","Vancouver","Montreal","Ottawa"],a:3,d:"gemiddeld"},
+  {c:"Aardrijkskunde",q:"In welk land ligt Timboektoe?",o:["Niger","Mali","Tsjaad","Burkina Faso"],a:1,d:"moeilijk"},
+  {c:"Aardrijkskunde",q:"Welke woestijn is de grootste ter wereld?",o:["Sahara","Gobi","Antarctische woestijn","Arabische"],a:2,d:"moeilijk"},
+  {c:"Aardrijkskunde",q:"Hoeveel provincies heeft België?",o:["8","9","10","11"],a:2,d:"makkelijk"},
+
+  // SPORT
+  {c:"Sport",q:"Hoeveel spelers heeft een voetbalteam op het veld?",o:["9","10","11","12"],a:2,d:"makkelijk"},
+  {c:"Sport",q:"Welk land won het WK voetbal in 2022?",o:["Frankrijk","Brazilië","Argentinië","Kroatië"],a:2,d:"makkelijk"},
+  {c:"Sport",q:"Hoeveel sets moet je winnen in een tennismatch (Grand Slam heren)?",o:["2","3","4","5"],a:1,d:"gemiddeld"},
+  {c:"Sport",q:"In welke sport wordt een 'birdie' gescoord?",o:["Tennis","Badminton","Golf","Cricket"],a:2,d:"makkelijk"},
+  {c:"Sport",q:"Welk land organiseert de Tour de France?",o:["België","Frankrijk","Spanje","Italië"],a:1,d:"makkelijk"},
+  {c:"Sport",q:"Hoeveel ringen heeft het Olympisch symbool?",o:["4","5","6","7"],a:1,d:"makkelijk"},
+  {c:"Sport",q:"Welke Belgische wielrenner wordt 'De Kannibaal' genoemd?",o:["Tom Boonen","Johan Museeuw","Eddy Merckx","Freddy Maertens"],a:2,d:"gemiddeld"},
+  {c:"Sport",q:"In welk jaar waren de Olympische Spelen in Tokio (recent)?",o:["2020","2021","2022","2019"],a:1,d:"gemiddeld"},
+  {c:"Sport",q:"Welk land heeft de meeste Formule 1 titels gewonnen (constructeurs)?",o:["McLaren","Mercedes","Ferrari","Red Bull"],a:2,d:"moeilijk"},
+  {c:"Sport",q:"Hoe lang is een marathon in kilometers?",o:["40,195 km","42,195 km","44,195 km","38,195 km"],a:1,d:"gemiddeld"},
+
+  // FILMS
+  {c:"Films",q:"Wie speelt Jack in Titanic?",o:["Brad Pitt","Tom Cruise","Leonardo DiCaprio","Matt Damon"],a:2,d:"makkelijk"},
+  {c:"Films",q:"In welk jaar kwam de eerste Star Wars film uit?",o:["1975","1977","1979","1980"],a:1,d:"gemiddeld"},
+  {c:"Films",q:"Welke film won de Oscar voor Beste Film in 2020?",o:["1917","Joker","Parasite","Once Upon a Time"],a:2,d:"moeilijk"},
+  {c:"Films",q:"Hoe heet de tovenaar in Lord of the Rings?",o:["Dumbledore","Gandalf","Merlin","Saruman"],a:1,d:"makkelijk"},
+  {c:"Films",q:"Welke studio maakte Toy Story?",o:["DreamWorks","Disney","Pixar","Illumination"],a:2,d:"makkelijk"},
+  {c:"Films",q:"Wie regisseerde Pulp Fiction?",o:["Martin Scorsese","Steven Spielberg","Quentin Tarantino","Christopher Nolan"],a:2,d:"gemiddeld"},
+  {c:"Films",q:"In welk fictief land speelt Black Panther zich af?",o:["Zamunda","Wakanda","Genovia","Narnia"],a:1,d:"makkelijk"},
+  {c:"Films",q:"Hoeveel Harry Potter films zijn er?",o:["6","7","8","9"],a:2,d:"makkelijk"},
+
+  // MUZIEK
+  {c:"Muziek",q:"Uit welk land komt ABBA?",o:["Noorwegen","Denemarken","Finland","Zweden"],a:3,d:"makkelijk"},
+  {c:"Muziek",q:"Wie wordt de 'King of Pop' genoemd?",o:["Prince","Elvis Presley","Michael Jackson","Stevie Wonder"],a:2,d:"makkelijk"},
+  {c:"Muziek",q:"Hoeveel snaren heeft een standaard gitaar?",o:["4","5","6","8"],a:2,d:"makkelijk"},
+  {c:"Muziek",q:"Welke Belgische zanger zong 'Ne me quitte pas'?",o:["Adamo","Jacques Brel","Arno","Stromae"],a:1,d:"gemiddeld"},
+  {c:"Muziek",q:"In welke stad werden The Beatles opgericht?",o:["Londen","Manchester","Liverpool","Birmingham"],a:2,d:"gemiddeld"},
+  {c:"Muziek",q:"Welk instrument bespeelde Mozart voornamelijk?",o:["Viool","Piano","Cello","Orgel"],a:1,d:"gemiddeld"},
+  {c:"Muziek",q:"Wie zong 'Bohemian Rhapsody'?",o:["The Beatles","Led Zeppelin","Queen","Pink Floyd"],a:2,d:"makkelijk"},
+  {c:"Muziek",q:"Welk Belgisch festival is het grootste ter wereld (dance)?",o:["Rock Werchter","Pukkelpop","Tomorrowland","Dour"],a:2,d:"makkelijk"},
+
+  // ETEN & DRINKEN
+  {c:"Eten",q:"Welk land is de bakermat van sushi?",o:["China","Korea","Thailand","Japan"],a:3,d:"makkelijk"},
+  {c:"Eten",q:"Van welk dier komt Parmezaanse kaas (traditioneel)?",o:["Geit","Schaap","Koe","Buffel"],a:2,d:"gemiddeld"},
+  {c:"Eten",q:"Wat is het hoofdingrediënt van guacamole?",o:["Tomaat","Avocado","Paprika","Komkommer"],a:1,d:"makkelijk"},
+  {c:"Eten",q:"Welk Belgisch bier is een trappist uit Chimay?",o:["Duvel","Chimay","Jupiler","Stella Artois"],a:1,d:"makkelijk"},
+  {c:"Eten",q:"Welk land is beroemd om paella?",o:["Portugal","Italië","Spanje","Griekenland"],a:2,d:"makkelijk"},
+  {c:"Eten",q:"Hoeveel smaken onderscheidt de menselijke tong?",o:["3","4","5","6"],a:2,d:"moeilijk"},
+  {c:"Eten",q:"Wat is het meest gedronken drankje ter wereld (na water)?",o:["Koffie","Bier","Thee","Melk"],a:2,d:"gemiddeld"},
+  {c:"Eten",q:"Welke Belgische stad is beroemd om zijn pralines?",o:["Antwerpen","Gent","Brussel","Brugge"],a:2,d:"gemiddeld"},
+
+  // DIEREN
+  {c:"Dieren",q:"Welk dier is het snelste op land?",o:["Leeuw","Cheetah","Gazelle","Struisvogel"],a:1,d:"makkelijk"},
+  {c:"Dieren",q:"Hoeveel poten heeft een spin?",o:["6","8","10","12"],a:1,d:"makkelijk"},
+  {c:"Dieren",q:"Welk dier is het grootste ter wereld?",o:["Afrikaanse olifant","Blauwe vinvis","Walvishaai","Giraffe"],a:1,d:"makkelijk"},
+  {c:"Dieren",q:"Welk dier slaapt het langst per dag?",o:["Luiaard","Kat","Koala","Vleermuis"],a:2,d:"moeilijk"},
+  {c:"Dieren",q:"Hoe heet een groep wolven?",o:["Kudde","Troep","Roedel","Kolonie"],a:2,d:"gemiddeld"},
+  {c:"Dieren",q:"Welk dier heeft de langste levensduur?",o:["Olifant","Schildpad","Walvis","Papegaai"],a:1,d:"gemiddeld"},
+  {c:"Dieren",q:"Hoeveel harten heeft een octopus?",o:["1","2","3","4"],a:2,d:"moeilijk"},
+  {c:"Dieren",q:"Welk dier kan zijn kleur veranderen?",o:["Gekko","Kameleon","Leguaan","Salamander"],a:1,d:"makkelijk"},
+
+  // RUIMTE
+  {c:"Ruimte",q:"Welke planeet is het dichtst bij de zon?",o:["Venus","Mars","Mercurius","Aarde"],a:2,d:"makkelijk"},
+  {c:"Ruimte",q:"Hoeveel planeten heeft ons zonnestelsel?",o:["7","8","9","10"],a:1,d:"makkelijk"},
+  {c:"Ruimte",q:"Welke planeet heeft de meeste manen?",o:["Jupiter","Saturnus","Uranus","Neptunus"],a:1,d:"moeilijk"},
+  {c:"Ruimte",q:"Hoe heet ons sterrenstelsel?",o:["Andromeda","Melkweg","Orion","Centaurus"],a:1,d:"makkelijk"},
+  {c:"Ruimte",q:"In welk jaar landde de eerste mens op de maan?",o:["1967","1969","1971","1973"],a:1,d:"makkelijk"},
+  {c:"Ruimte",q:"Welke planeet wordt de 'rode planeet' genoemd?",o:["Venus","Mars","Jupiter","Saturnus"],a:1,d:"makkelijk"},
+  {c:"Ruimte",q:"Hoe lang doet licht er over om van de zon naar de aarde te reizen?",o:["4 minuten","6 minuten","8 minuten","12 minuten"],a:2,d:"moeilijk"},
+  {c:"Ruimte",q:"Welke planeet heeft de beroemde ringen?",o:["Jupiter","Uranus","Neptunus","Saturnus"],a:3,d:"makkelijk"},
+
+  // TECHNOLOGIE
+  {c:"Technologie",q:"Wie is de oprichter van Microsoft?",o:["Steve Jobs","Bill Gates","Elon Musk","Jeff Bezos"],a:1,d:"makkelijk"},
+  {c:"Technologie",q:"In welk jaar werd de iPhone gelanceerd?",o:["2005","2006","2007","2008"],a:2,d:"gemiddeld"},
+  {c:"Technologie",q:"Waarvoor staat HTML?",o:["HyperText Markup Language","High Tech Modern Language","HyperTransfer Markup Language","Home Tool Markup Language"],a:0,d:"gemiddeld"},
+  {c:"Technologie",q:"Welk bedrijf maakte de eerste commerciële computer?",o:["Apple","IBM","Microsoft","HP"],a:1,d:"moeilijk"},
+  {c:"Technologie",q:"Wat betekent 'AI'?",o:["Auto Intelligence","Artificial Integration","Artificial Intelligence","Automated Internet"],a:2,d:"makkelijk"},
+  {c:"Technologie",q:"Welk social media platform werd opgericht door Mark Zuckerberg?",o:["Twitter","Instagram","Facebook","Snapchat"],a:2,d:"makkelijk"},
+  {c:"Technologie",q:"In welk jaar werd Google opgericht?",o:["1996","1998","2000","2002"],a:1,d:"gemiddeld"},
+  {c:"Technologie",q:"Wat is de programmeertaal die het meest wordt gebruikt voor websites?",o:["Python","Java","JavaScript","C++"],a:2,d:"gemiddeld"},
+
+  // KUNST & CULTUUR
+  {c:"Kunst",q:"Wie schilderde de Mona Lisa?",o:["Michelangelo","Rembrandt","Leonardo da Vinci","Van Gogh"],a:2,d:"makkelijk"},
+  {c:"Kunst",q:"In welk museum hangt de Mona Lisa?",o:["British Museum","Rijksmuseum","Louvre","Uffizi"],a:2,d:"gemiddeld"},
+  {c:"Kunst",q:"Welke Belgische kunstenaar schilderde surrealistische werken met pijpen?",o:["James Ensor","Paul Delvaux","René Magritte","Luc Tuymans"],a:2,d:"gemiddeld"},
+  {c:"Kunst",q:"Wie schreef 'Romeo en Julia'?",o:["Charles Dickens","William Shakespeare","Jane Austen","Oscar Wilde"],a:1,d:"makkelijk"},
+  {c:"Kunst",q:"Welke schilder sneed zijn eigen oor af?",o:["Monet","Cézanne","Van Gogh","Gauguin"],a:2,d:"makkelijk"},
+  {c:"Kunst",q:"Uit welk land komt origami?",o:["China","Korea","Japan","Thailand"],a:2,d:"gemiddeld"},
+];
+
+const CATEGORY_MAP = {
+  "Wetenschap":"🔬","Geschiedenis":"📜","Aardrijkskunde":"🌍","Sport":"⚽",
+  "Films":"🎬","Muziek":"🎵","Eten":"🍽️","Dieren":"🐾","Ruimte":"🚀",
+  "Technologie":"💻","Kunst":"🎨"
+};
+
+const ALL_CATEGORIES = [...new Set(QUESTIONS_DB.map(q => q.c))];
+const DIFFICULTIES = ["makkelijk","gemiddeld","moeilijk"];
+const NUM_OPTIONS = [5,10,15,20];
+
+// ============================================================
+// SCORE MANAGEMENT
+// ============================================================
+const ScoreManager = {
+  scores: [],
+
+  async load() {
+    // Try PHP first, fallback to localStorage
+    try {
+      const res = await fetch('get_scores.php');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) { this.scores = data; return; }
+      }
+    } catch(e) {}
+    // Fallback
+    try {
+      this.scores = JSON.parse(localStorage.getItem('trivia_scores') || '[]');
+    } catch(e) { this.scores = []; }
+  },
+
+  async save(entry) {
+    this.scores.push(entry);
+    this.scores.sort((a,b) => b.percentage - a.percentage || b.score - a.score);
+    this.scores = this.scores.slice(0, 50); // max 50
+
+    // Save to localStorage always
+    localStorage.setItem('trivia_scores', JSON.stringify(this.scores));
+
+    // Try PHP
+    try {
+      await fetch('save_score.php', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(entry)
+      });
+    } catch(e) {}
+  },
+
+  getTop(n = 10) {
+    return this.scores.slice(0, n);
+  }
+};
+
+// ============================================================
+// APP
+// ============================================================
+const app = document.getElementById('app');
+
+let state = {
+  screen: 'setup', // setup | playing | checking | results | scoreboard
+  categories: [],
+  difficulty: 'gemiddeld',
+  numQuestions: 10,
+  questions: [],
+  current: 0,
+  selected: null,
+  showAnswer: false,
+  score: 0,
+  answers: [],
+  playerName: localStorage.getItem('trivia_player') || ''
+};
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function pickQuestions() {
+  let pool = QUESTIONS_DB.filter(q => state.categories.includes(q.c));
+  if (state.difficulty !== 'alle') pool = pool.filter(q => q.d === state.difficulty);
+  return shuffle(pool).slice(0, state.numQuestions);
+}
+
+function render() {
+  switch(state.screen) {
+    case 'setup': renderSetup(); break;
+    case 'playing': renderPlaying(); break;
+    case 'results': renderResults(); break;
+    case 'scoreboard': renderScoreboard(); break;
+  }
+}
+
+// ---- SETUP ----
+function renderSetup() {
+  app.innerHTML = `
+    <div class="header">
+      <h1>🧠 Trivia</h1>
+      <p>Test je kennis met 100 Nederlandstalige vragen!</p>
+    </div>
+    <div class="card">
+      <h2>👤 Jouw naam</h2>
+      <input class="name-input" id="nameInput" type="text" placeholder="Typ je naam..." value="${state.playerName}" maxlength="20">
+    </div>
+    <div class="card">
+      <h2>📂 Categorieën</h2>
+      <div class="btn-grid">
+        ${ALL_CATEGORIES.map(c => `
+          <button class="btn ${state.categories.includes(c)?'active':''}" onclick="toggleCat('${c}')">
+            ${CATEGORY_MAP[c]||''} ${c}
+          </button>
+        `).join('')}
+        <button class="btn ${state.categories.length===ALL_CATEGORIES.length?'active':''}" onclick="selectAllCats()">
+          ✅ Alles
+        </button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>📊 Moeilijkheid</h2>
+      <div class="btn-grid btn-grid-4">
+        ${DIFFICULTIES.map(d => `
+          <button class="btn ${state.difficulty===d?'active':''}" onclick="setDiff('${d}')">${d}</button>
+        `).join('')}
+        <button class="btn ${state.difficulty==='alle'?'active':''}" onclick="setDiff('alle')">Alle</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>🔢 Aantal vragen</h2>
+      <div class="btn-grid btn-grid-4">
+        ${NUM_OPTIONS.map(n => `
+          <button class="btn ${state.numQuestions===n?'active':''}" onclick="setNum(${n})">${n}</button>
+        `).join('')}
+      </div>
+    </div>
+    <button class="btn-primary" onclick="startGame()">🚀 Start het spel</button>
+    <button class="btn-primary mt-16" style="background:#374151;color:#34d399;" onclick="showScoreboard()">🏆 Scorebord bekijken</button>
+  `;
+
+  document.getElementById('nameInput').addEventListener('input', e => {
+    state.playerName = e.target.value;
+    localStorage.setItem('trivia_player', state.playerName);
+  });
+}
+
+window.toggleCat = (c) => {
+  if (state.categories.includes(c)) state.categories = state.categories.filter(x=>x!==c);
+  else state.categories.push(c);
+  render();
+};
+window.selectAllCats = () => {
+  state.categories = state.categories.length === ALL_CATEGORIES.length ? [] : [...ALL_CATEGORIES];
+  render();
+};
+window.setDiff = (d) => { state.difficulty = d; render(); };
+window.setNum = (n) => { state.numQuestions = n; render(); };
+
+window.startGame = () => {
+  if (!state.categories.length) { alert('Selecteer minstens één categorie!'); return; }
+  if (!state.playerName.trim()) { alert('Vul je naam in!'); return; }
+  state.questions = pickQuestions();
+  if (!state.questions.length) { alert('Geen vragen beschikbaar voor deze combinatie!'); return; }
+  state.current = 0;
+  state.selected = null;
+  state.showAnswer = false;
+  state.score = 0;
+  state.answers = [];
+  state.screen = 'playing';
+  render();
+};
+
+// ---- PLAYING ----
+function renderPlaying() {
+  const q = state.questions[state.current];
+  const pct = ((state.current) / state.questions.length * 100).toFixed(0);
+  const letters = ['A','B','C','D'];
+
+  app.innerHTML = `
+    <div class="top-bar">
+      <span>Vraag ${state.current+1} van ${state.questions.length}</span>
+      <span>Score: ${state.score}</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="card">
+      <span class="category-badge">${CATEGORY_MAP[q.c]||''} ${q.c}</span>
+      <div class="question-text">${q.q}</div>
+      <div class="options">
+        ${q.o.map((opt, i) => {
+          let cls = 'option-btn';
+          let check = '';
+          if (state.showAnswer) {
+            cls += ' disabled';
+            if (i === q.a) { cls += ' correct'; check = '✓'; }
+            else if (i === state.selected) { cls += ' wrong'; check = '✗'; }
+            else { cls += ' dimmed'; }
+          } else if (state.selected === i) {
+            cls += ' selected';
+          }
+          return `<button class="${cls}" ${state.showAnswer?'':'onclick="selectOpt('+i+')"'}>
+            <span><span class="option-letter">${letters[i]}.</span>${opt}</span>
+            <span class="option-check">${check}</span>
+          </button>`;
+        }).join('')}
+      </div>
+      <button class="btn-primary" onclick="checkOrNext()">
+        ${!state.showAnswer ? '✅ Controleer antwoord' : 
+          state.current + 1 >= state.questions.length ? '🏁 Bekijk resultaten' : '➡️ Volgende vraag'}
+      </button>
+    </div>
+  `;
+}
+
+window.selectOpt = (i) => { state.selected = i; render(); };
+
+window.checkOrNext = () => {
+  if (state.selected === null) { alert('Selecteer een antwoord!'); return; }
+
+  if (!state.showAnswer) {
+    state.showAnswer = true;
+    render();
+    return;
+  }
+
+  const q = state.questions[state.current];
+  const isCorrect = state.selected === q.a;
+  state.answers.push({ qi: state.current, sel: state.selected, correct: isCorrect });
+  if (isCorrect) state.score++;
+
+  if (state.current + 1 < state.questions.length) {
+    state.current++;
+    state.selected = null;
+    state.showAnswer = false;
+    state.screen = 'playing';
+  } else {
+    state.screen = 'results';
+    const pct = Math.round((state.score / state.questions.length) * 100);
+    ScoreManager.save({
+      name: state.playerName.trim(),
+      score: state.score,
+      total: state.questions.length,
+      percentage: pct,
+      difficulty: state.difficulty,
+      date: new Date().toISOString().split('T')[0]
+    });
+  }
+  render();
+};
+
+// ---- RESULTS ----
+function renderResults() {
+  const pct = Math.round((state.score / state.questions.length) * 100);
+  let msg = '📚 Blijf oefenen!';
+  if (pct >= 80) msg = '🏆 Uitstekend!';
+  else if (pct >= 60) msg = '👍 Goed gedaan!';
+  else if (pct >= 40) msg = '👌 Niet slecht!';
+
+  app.innerHTML = `
+    <div class="header">
+      <h1>Resultaten</h1>
+    </div>
+    <div class="card text-center">
+      <div class="score-big">${state.score}/${state.questions.length}</div>
+      <div class="score-pct">${pct}% correct</div>
+      <div class="score-msg">${msg}</div>
+    </div>
+    <div class="card">
+      <h2>Overzicht</h2>
+      ${state.answers.map((ans, i) => {
+        const q = state.questions[ans.qi];
+        return `<div class="result-item ${ans.correct?'correct':'wrong'}">
+          <div class="q">${i+1}. ${q.q}</div>
+          <div class="a ${ans.correct?'green':'red'}">Jouw antwoord: ${q.o[ans.sel]}</div>
+          ${!ans.correct ? `<div class="a green">Correct: ${q.o[q.a]}</div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>
+    <button class="btn-primary" onclick="resetGame()">🔄 Opnieuw spelen</button>
+    <button class="btn-primary mt-16" style="background:#374151;color:#34d399;" onclick="showScoreboard()">🏆 Scorebord</button>
+  `;
+}
+
+window.resetGame = () => { state.screen = 'setup'; render(); };
+
+// ---- SCOREBOARD ----
+window.showScoreboard = async () => {
+  state.screen = 'scoreboard';
+  await ScoreManager.load();
+  renderScoreboardView();
+};
+
+function renderScoreboard() { ScoreManager.load().then(() => renderScoreboardView()); }
+
+function renderScoreboardView() {
+  const top = ScoreManager.getTop(15);
+  const rankClass = (i) => i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : '';
+
+  app.innerHTML = `
+    <div class="header">
+      <h1>🏆 Scorebord</h1>
+      <p>Top scores van alle spelers</p>
+    </div>
+    <div class="card">
+      ${top.length ? `
+        <table class="score-table">
+          <thead><tr><th>#</th><th>Speler</th><th>Score</th><th>%</th><th>Niveau</th><th>Datum</th></tr></thead>
+          <tbody>
+            ${top.map((s, i) => `
+              <tr>
+                <td class="${rankClass(i)}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
+                <td>${s.name}</td>
+                <td>${s.score}/${s.total}</td>
+                <td style="color:#34d399;font-weight:700">${s.percentage}%</td>
+                <td>${s.difficulty||'-'}</td>
+                <td>${s.date||'-'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      ` : '<div class="empty-state">Nog geen scores. Speel een spel om op het scorebord te komen!</div>'}
+    </div>
+    <button class="btn-primary" onclick="resetGame()">⬅️ Terug naar menu</button>
+    ${top.length ? `<button class="btn-primary mt-16" style="background:#ef4444;color:#fff;" onclick="clearScores()">🗑️ Scores wissen</button>` : ''}
+  `;
+}
+
+window.clearScores = () => {
+  if (confirm('Weet je zeker dat je alle scores wilt wissen?')) {
+    ScoreManager.scores = [];
+    localStorage.removeItem('trivia_scores');
+    renderScoreboardView();
+  }
+};
+
+// ---- INIT ----
+ScoreManager.load().then(() => render());
+</script>
+</body>
+</html>

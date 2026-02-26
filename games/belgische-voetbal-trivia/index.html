@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Belgische Voetbal Trivia - Builder</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0a0a;color:#e0e0e0;min-height:100vh}
+  .builder{max-width:1100px;margin:0 auto;padding:20px}
+  .header{text-align:center;padding:30px 0 20px}
+  .header h1{font-size:2.2rem;font-weight:900;color:#22c55e;margin-bottom:8px}
+  .header p{color:#9ca3af;font-size:1rem}
+  .download-bar{background:linear-gradient(135deg,#166534,#15803d);border-radius:16px;padding:24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+  .download-bar .info h2{font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:4px}
+  .download-bar .info p{color:#bbf7d0;font-size:.9rem}
+  .download-btn{background:#000;color:#22c55e;border:2px solid #22c55e;padding:14px 32px;border-radius:12px;font-size:1.1rem;font-weight:800;cursor:pointer;transition:all .2s}
+  .download-btn:hover{background:#22c55e;color:#000}
+  .structure{background:#111;border:2px solid #333;border-radius:16px;padding:24px;margin-bottom:24px}
+  .structure h3{color:#22c55e;font-size:1.1rem;margin-bottom:16px;font-weight:700}
+  .tree{font-family:'Fira Code',monospace;font-size:.9rem;line-height:1.8}
+  .tree .folder{color:#fbbf24}
+  .tree .file{color:#60a5fa}
+  .tree .desc{color:#6b7280}
+  .tabs{display:flex;gap:4px;margin-bottom:0;flex-wrap:wrap}
+  .tab{padding:10px 20px;background:#1a1a1a;border:2px solid #333;border-bottom:none;border-radius:12px 12px 0 0;cursor:pointer;font-weight:700;font-size:.85rem;color:#9ca3af;transition:all .2s}
+  .tab.active{background:#1e1e1e;color:#22c55e;border-color:#22c55e;border-bottom-color:#1e1e1e}
+  .tab:hover:not(.active){color:#fff}
+  .code-panel{background:#1e1e1e;border:2px solid #22c55e;border-radius:0 16px 16px 16px;padding:0;overflow:hidden;position:relative}
+  .code-header{background:#111;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #333}
+  .code-header span{color:#22c55e;font-weight:700;font-size:.85rem}
+  .copy-btn{background:#333;color:#e0e0e0;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:.8rem;font-weight:600;transition:all .2s}
+  .copy-btn:hover{background:#22c55e;color:#000}
+  pre{padding:20px;overflow:auto;max-height:600px;font-size:.8rem;line-height:1.6;tab-size:2}
+  code{font-family:'Fira Code',Consolas,monospace;color:#d4d4d4}
+  .kw{color:#c586c0}.str{color:#ce9178}.cm{color:#6a9955}.fn{color:#dcdcaa}.num{color:#b5cea8}.tag{color:#569cd6}.attr{color:#9cdcfe}.val{color:#ce9178}
+  .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:24px}
+  .feature{background:#111;border:2px solid #333;border-radius:12px;padding:20px}
+  .feature h4{color:#22c55e;font-size:.95rem;margin-bottom:8px}
+  .feature p{color:#9ca3af;font-size:.85rem;line-height:1.5}
+  .badge{display:inline-block;background:#22c55e20;color:#22c55e;padding:2px 10px;border-radius:20px;font-size:.75rem;font-weight:700;margin-right:6px;margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="builder">
+  <div class="header">
+    <h1>⚽ Belgische Voetbal Trivia</h1>
+    <p>Compleet spel klaar voor Hostinger — HTML + PHP + JSON</p>
+  </div>
+
+  <div class="download-bar">
+    <div class="info">
+      <h2>📦 Download ZIP</h2>
+      <p>3 bestanden · Upload naar /belgische-voetbal-trivia/ op Hostinger</p>
+    </div>
+    <button class="download-btn" onclick="downloadZip()">⬇ Download ZIP</button>
+  </div>
+
+  <div class="features">
+    <div class="feature">
+      <h4>🏗️ Mappenstructuur</h4>
+      <p><span class="badge">Eigen map</span><span class="badge">Geen conflict</span><br>Elk spel = eigen mapje. Zet straks game 2 in een aparte map.</p>
+    </div>
+    <div class="feature">
+      <h4>💾 Scores opslaan</h4>
+      <p><span class="badge">PHP primary</span><span class="badge">localStorage fallback</span><br>scores.php schrijft naar JSON. Faalt het? localStorage vangt op.</p>
+    </div>
+    <div class="feature">
+      <h4>⚡ Zero dependencies</h4>
+      <p><span class="badge">Vanilla JS</span><span class="badge">Geen framework</span><br>Pure HTML/CSS/JS. Laadt instant, geen build stap nodig.</p>
+    </div>
+    <div class="feature">
+      <h4>🇧🇪 30 trivia vragen</h4>
+      <p><span class="badge">Pro League</span><span class="badge">Rode Duivels</span><br>Mix van clubs, historie, stadions en spelers. Makkelijk uit te breiden.</p>
+    </div>
+  </div>
+
+  <div class="structure">
+    <h3>📂 Bestandsstructuur op Hostinger</h3>
+    <div class="tree">
+      <span class="folder">public_html/</span><br>
+      &nbsp;&nbsp;└── <span class="folder">belgische-voetbal-trivia/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">index.html</span> <span class="desc">← Het spel (standalone)</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">scores.php</span> <span class="desc">← API: highscores opslaan/laden</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="file">scores.json</span> <span class="desc">← Data (auto-aangemaakt door PHP)</span><br>
+      <br>
+      &nbsp;&nbsp;└── <span class="folder">game-2/</span> <span class="desc">← Volgende game hier</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">index.html</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">scores.php</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="file">scores.json</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('html',this)">index.html</div>
+    <div class="tab" onclick="showTab('php',this)">scores.php</div>
+    <div class="tab" onclick="showTab('json',this)">scores.json</div>
+    <div class="tab" onclick="showTab('setup',this)">🚀 Setup guide</div>
+  </div>
+  <div class="code-panel">
+    <div class="code-header">
+      <span id="fileLabel">index.html — Het trivia spel</span>
+      <button class="copy-btn" onclick="copyCode()">📋 Kopieer</button>
+    </div>
+    <pre><code id="codeContent"></code></pre>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// FILE CONTENTS
+// ============================================================
+
+const FILES = {};
+
+// ---- INDEX.HTML ----
+FILES.html = `<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Belgische Voetbal Trivia ⚽</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;overflow-x:hidden}
+.container{max-width:700px;margin:0 auto;padding:20px}
+.logo{text-align:center;padding:30px 0 10px}
+.logo h1{font-size:2.4rem;font-weight:900;background:linear-gradient(135deg,#fbbf24,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo p{color:#94a3b8;margin-top:6px;font-size:1rem}
+.card{background:#1e293b;border-radius:16px;padding:28px;margin-bottom:20px;border:2px solid #334155;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.card h2{color:#fbbf24;font-size:1.3rem;margin-bottom:16px;font-weight:800}
+.btn{display:inline-block;padding:14px 28px;border-radius:12px;font-weight:800;font-size:1rem;cursor:pointer;border:2px solid transparent;transition:all .2s;text-align:center}
+.btn-primary{background:#fbbf24;color:#0f172a;border-color:#fbbf24;width:100%}
+.btn-primary:hover{background:#f59e0b;transform:translateY(-1px)}
+.btn-option{background:#334155;color:#e2e8f0;border-color:#475569;width:100%;margin-bottom:10px;text-align:left;display:flex;align-items:center;gap:12px}
+.btn-option:hover:not(.disabled){background:#475569;border-color:#fbbf24}
+.btn-option.selected{background:#fbbf24;color:#0f172a;border-color:#fbbf24}
+.btn-option.correct{background:#22c55e;color:#fff;border-color:#22c55e}
+.btn-option.wrong{background:#ef4444;color:#fff;border-color:#ef4444}
+.btn-option.reveal{background:#334155;border-color:#22c55e;color:#22c55e}
+.btn-option .letter{font-weight:900;font-size:1.1rem;min-width:24px}
+.progress-bar{background:#334155;border-radius:99px;height:8px;margin-bottom:20px;overflow:hidden}
+.progress-fill{background:linear-gradient(90deg,#fbbf24,#f59e0b);height:100%;border-radius:99px;transition:width .4s ease}
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.badge{background:#fbbf2420;color:#fbbf24;padding:4px 14px;border-radius:99px;font-size:.85rem;font-weight:700}
+.score-display{font-size:1.1rem;font-weight:800;color:#fbbf24}
+.category{display:inline-block;background:#fbbf2415;color:#fbbf24;padding:4px 14px;border-radius:8px;font-size:.8rem;font-weight:700;margin-bottom:14px}
+.question-text{font-size:1.25rem;font-weight:700;line-height:1.5;margin-bottom:24px}
+.result-score{text-align:center;font-size:4rem;font-weight:900;color:#fbbf24;margin:20px 0}
+.result-pct{text-align:center;font-size:1.3rem;color:#94a3b8;margin-bottom:8px}
+.result-msg{text-align:center;font-size:1.5rem;margin-bottom:24px}
+.result-item{padding:14px;border-radius:10px;margin-bottom:10px;border-left:4px solid}
+.result-item.correct{background:#22c55e15;border-color:#22c55e}
+.result-item.wrong{background:#ef444415;border-color:#ef4444}
+.result-item .q{font-weight:700;margin-bottom:6px;font-size:.95rem}
+.result-item .a{font-size:.85rem;color:#94a3b8}
+.result-item .a span{font-weight:700}
+.result-item .a .right{color:#22c55e}
+.result-item .a .wr{color:#ef4444}
+.name-input{width:100%;padding:14px;border-radius:10px;border:2px solid #475569;background:#0f172a;color:#e2e8f0;font-size:1rem;font-weight:600;margin-bottom:16px;outline:none;transition:border .2s}
+.name-input:focus{border-color:#fbbf24}
+.leaderboard-item{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#0f172a;border-radius:10px;margin-bottom:8px}
+.leaderboard-item .rank{font-weight:900;color:#fbbf24;min-width:30px}
+.leaderboard-item .name{font-weight:700;flex:1}
+.leaderboard-item .pts{font-weight:800;color:#fbbf24}
+.leaderboard-item:nth-child(1) .rank{font-size:1.2rem}
+.hidden{display:none}
+.fade-in{animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:20px;color:#475569;font-size:.8rem}
+.difficulty-btns{display:flex;gap:8px;margin-bottom:20px}
+.diff-btn{flex:1;padding:12px;border-radius:10px;border:2px solid #475569;background:#334155;color:#e2e8f0;font-weight:700;cursor:pointer;text-align:center;transition:all .2s}
+.diff-btn.active{border-color:#fbbf24;background:#fbbf2420;color:#fbbf24}
+.diff-btn:hover:not(.active){border-color:#94a3b8}
+.timer-bar{height:4px;background:#334155;border-radius:2px;margin-bottom:16px;overflow:hidden}
+.timer-fill{height:100%;background:#fbbf24;transition:width .1s linear}
+.timer-fill.danger{background:#ef4444}
+</style>
+</head>
+<body>
+<div class="container" id="app"></div>
+<script>
+// ===== QUESTIONS DATABASE =====
+const QUESTIONS = [
+  // --- CLUBS & TITELS ---
+  {q:"Welke club heeft de meeste Belgische landstitels?",o:["Club Brugge","RSC Anderlecht","Standard Luik","KRC Genk"],c:1,cat:"Clubs",diff:"makkelijk"},
+  {q:"In welk jaar won KAA Gent zijn eerste landstitel?",o:["2010","2013","2015","2017"],c:2,cat:"Clubs",diff:"gemiddeld"},
+  {q:"Welke club staat bekend als 'De Rouches'?",o:["KV Mechelen","Standard Luik","Charleroi","Royal Antwerp"],c:1,cat:"Clubs",diff:"makkelijk"},
+  {q:"Hoeveel keer won RSC Anderlecht de Europacup der Bekerwinnaars?",o:["1 keer","2 keer","3 keer","Nooit"],c:1,cat:"Europa",diff:"moeilijk"},
+  {q:"Welke club promoveerde in 2020 terug naar de Jupiler Pro League na jarenlange afwezigheid?",o:["Beerschot","Union SG","RWDM","Lommel"],c:1,cat:"Clubs",diff:"moeilijk"},
+  {q:"Welk team staat bekend als 'De Great Old'?",o:["Club Brugge","Beerschot","Royal Antwerp FC","Union SG"],c:2,cat:"Clubs",diff:"makkelijk"},
+
+  // --- STADIONS ---
+  {q:"Hoe heet het stadion van Club Brugge?",o:["Lotto Park","Jan Breydelstadion","Bosuil","Ghelamco Arena"],c:1,cat:"Stadions",diff:"makkelijk"},
+  {q:"In welk stadion speelt KAA Gent zijn thuiswedstrijden?",o:["Daknamstadion","Ghelamco Arena","King Power Stadion","Regenboogstadion"],c:1,cat:"Stadions",diff:"makkelijk"},
+  {q:"Welk stadion van Standard Luik wordt ook 'Sclessin' genoemd?",o:["Stade Roi Baudouin","Stade Maurice Dufrasne","Stade du Pays","Stade Vélodrome"],c:1,cat:"Stadions",diff:"gemiddeld"},
+  {q:"In welk stadion speelt RSC Anderlecht?",o:["Lotto Park","Constant Vanden Stock","Jan Breydelstadion","Bosuil"],c:0,cat:"Stadions",diff:"makkelijk"},
+  {q:"Welke twee clubs delen het Jan Breydelstadion?",o:["Club Brugge & Cercle Brugge","Club Brugge & KV Oostende","Cercle Brugge & Zeebrugge","Club Brugge & Knokke"],c:0,cat:"Stadions",diff:"gemiddeld"},
+  {q:"Hoe heet het stadion van KRC Genk?",o:["Ghelamco Arena","Cegeka Arena","Daknamstadion","Fenixstadion"],c:1,cat:"Stadions",diff:"gemiddeld"},
+
+  // --- RODE DUIVELS ---
+  {q:"Welke plaats behaalden de Rode Duivels op het WK 2018 in Rusland?",o:["1ste","2de","3de","4de"],c:2,cat:"Rode Duivels",diff:"makkelijk"},
+  {q:"Wie is de Belgische recordinternational qua aantal caps?",o:["Eden Hazard","Jan Vertonghen","Axel Witsel","Thibaut Courtois"],c:1,cat:"Rode Duivels",diff:"gemiddeld"},
+  {q:"Wie is de all-time topscorer van de Rode Duivels?",o:["Eden Hazard","Romelu Lukaku","Marc Wilmots","Paul Van Himst"],c:1,cat:"Rode Duivels",diff:"makkelijk"},
+  {q:"Welke bondscoach leidde België naar de 3de plaats op het WK 2018?",o:["Marc Wilmots","Roberto Martinez","Domenico Tedesco","René Vandereycken"],c:1,cat:"Rode Duivels",diff:"gemiddeld"},
+  {q:"In welk jaar bereikten de Rode Duivels het hoogste punt op de FIFA-ranking (#1)?",o:["2015","2018","2020","2022"],c:1,cat:"Rode Duivels",diff:"moeilijk"},
+
+  // --- HISTORIE ---
+  {q:"Welke Belgische club won de UEFA Cup in 1988?",o:["RSC Anderlecht","Club Brugge","KV Mechelen","Standard Luik"],c:2,cat:"Europa",diff:"moeilijk"},
+  {q:"Club Brugge verloor de Europacup I-finale in 1978. Tegen wie?",o:["Real Madrid","AC Milan","Liverpool","Bayern München"],c:2,cat:"Europa",diff:"moeilijk"},
+  {q:"Hoe wordt de Belgische eerste klasse officieel gesponsord?",o:["Jupiler Pro League","Proximus League","Belfius League","Croky League"],c:0,cat:"Competitie",diff:"makkelijk"},
+  {q:"Hoeveel teams telt de Jupiler Pro League in het reguliere seizoen?",o:["14","16","18","20"],c:1,cat:"Competitie",diff:"gemiddeld"},
+  {q:"Welk systeem gebruikt de Pro League aan het einde van het seizoen?",o:["Directe competitie","Play-offs","Round robin","Knock-out"],c:1,cat:"Competitie",diff:"gemiddeld"},
+
+  // --- SPELERS ---
+  {q:"Bij welke Belgische club begon Vincent Kompany zijn carrière?",o:["Standard Luik","RSC Anderlecht","Club Brugge","KRC Genk"],c:1,cat:"Spelers",diff:"gemiddeld"},
+  {q:"Bij welke Belgische club werd Kevin De Bruyne opgeleid?",o:["RSC Anderlecht","Club Brugge","KRC Genk","KAA Gent"],c:2,cat:"Spelers",diff:"gemiddeld"},
+  {q:"Welke Belgische keeper speelde jarenlang voor Atlético Madrid en Real Madrid?",o:["Simon Mignolet","Thibaut Courtois","Jean-Marie Pfaff","Silvio Proto"],c:1,cat:"Spelers",diff:"makkelijk"},
+  {q:"Bij welke Belgische club speelde Radja Nainggolan het laatst?",o:["Standard Luik","RSC Anderlecht","Royal Antwerp FC","Club Brugge"],c:2,cat:"Spelers",diff:"moeilijk"},
+  {q:"Welke legendarische Belgische keeper speelde voor Bayern München in de jaren '80?",o:["Michel Preud'homme","Jean-Marie Pfaff","Filip De Wilde","Geert De Vlieger"],c:1,cat:"Spelers",diff:"moeilijk"},
+  {q:"Bij welke Belgische club begon Eden Hazard zijn profcarrière?",o:["RSC Anderlecht","Standard Luik","Club Brugge","LOSC Lille"],c:3,cat:"Spelers",diff:"moeilijk"},
+
+  // --- EXTRA ---
+  {q:"Welke Belgische club wordt 'De Blauw-Zwarten' genoemd?",o:["KAA Gent","RSC Anderlecht","KRC Genk","Club Brugge"],c:3,cat:"Clubs",diff:"makkelijk"},
+  {q:"Union Saint-Gilloise speelt in welke Brusselse gemeente?",o:["Anderlecht","Sint-Gillis","Etterbeek","Schaarbeek"],c:1,cat:"Clubs",diff:"gemiddeld"},
+];
+
+// ===== GAME ENGINE =====
+const app = document.getElementById('app');
+let state = {screen:'menu',playerName:'',difficulty:'all',questions:[],current:0,score:0,selected:null,revealed:false,answers:[],timer:0,timerInterval:null,scores:[]};
+
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function getQuestions(diff,count=15){
+  let pool=diff==='all'?[...QUESTIONS]:QUESTIONS.filter(q=>q.diff===diff);
+  pool=shuffle(pool);
+  return pool.slice(0,Math.min(count,pool.length)).map(q=>{
+    const opts=q.o.map((o,i)=>({text:o,isCorrect:i===q.c}));
+    const shuffled=shuffle(opts);
+    return{question:q.q,options:shuffled,category:q.cat,difficulty:q.diff};
+  });
+}
+
+// ===== SCORES API =====
+async function loadScores(){
+  try{
+    const r=await fetch('scores.php?action=get');
+    if(r.ok){const d=await r.json();state.scores=d;return}
+  }catch(e){}
+  try{state.scores=JSON.parse(localStorage.getItem('triviaScores')||'[]')}catch(e){state.scores=[]}
+}
+
+async function saveScore(name,score,total){
+  const entry={name,score,total,pct:Math.round(score/total*100),date:new Date().toISOString()};
+  try{
+    const r=await fetch('scores.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});
+    if(r.ok){const d=await r.json();state.scores=d.scores||state.scores;return}
+  }catch(e){}
+  state.scores.push(entry);
+  state.scores.sort((a,b)=>b.pct-a.pct);
+  state.scores=state.scores.slice(0,20);
+  localStorage.setItem('triviaScores',JSON.stringify(state.scores));
+}
+
+// ===== TIMER =====
+function startTimer(){
+  const limit=state.difficulty==='makkelijk'?30:state.difficulty==='gemiddeld'?20:state.difficulty==='moeilijk'?15:25;
+  state.timer=limit;
+  clearInterval(state.timerInterval);
+  state.timerInterval=setInterval(()=>{
+    state.timer-=0.1;
+    if(state.timer<=0){state.timer=0;clearInterval(state.timerInterval);autoReveal()}
+    renderTimerOnly();
+  },100);
+}
+function stopTimer(){clearInterval(state.timerInterval)}
+function autoReveal(){if(!state.revealed){state.revealed=true;state.answers.push({q:state.questions[state.current],selected:null,correct:false});render()}}
+
+function renderTimerOnly(){
+  const el=document.getElementById('timer-fill');
+  if(!el)return;
+  const limit=state.difficulty==='makkelijk'?30:state.difficulty==='gemiddeld'?20:state.difficulty==='moeilijk'?15:25;
+  const pct=(state.timer/limit)*100;
+  el.style.width=pct+'%';
+  el.className='timer-fill'+(pct<25?' danger':'');
+}
+
+// ===== RENDER =====
+function render(){
+  if(state.screen==='menu')renderMenu();
+  else if(state.screen==='play')renderQuestion();
+  else if(state.screen==='results')renderResults();
+  else if(state.screen==='leaderboard')renderLeaderboard();
+}
+
+function renderMenu(){
+  app.innerHTML=\`
+    <div class="logo"><h1>⚽ Belgische Voetbal Trivia</h1><p>Test je kennis over de Jupiler Pro League & Rode Duivels</p></div>
+    <div class="card fade-in">
+      <h2>👤 Jouw naam</h2>
+      <input class="name-input" id="nameInput" placeholder="Vul je naam in..." value="\${state.playerName}" maxlength="20">
+    </div>
+    <div class="card fade-in">
+      <h2>⚡ Moeilijkheid</h2>
+      <div class="difficulty-btns">
+        <div class="diff-btn \${state.difficulty==='all'?'active':''}" onclick="setDiff('all')">Alles</div>
+        <div class="diff-btn \${state.difficulty==='makkelijk'?'active':''}" onclick="setDiff('makkelijk')">Makkelijk</div>
+        <div class="diff-btn \${state.difficulty==='gemiddeld'?'active':''}" onclick="setDiff('gemiddeld')">Gemiddeld</div>
+        <div class="diff-btn \${state.difficulty==='moeilijk'?'active':''}" onclick="setDiff('moeilijk')">Moeilijk</div>
+      </div>
+      <button class="btn btn-primary" onclick="startGame()">🚀 Start Trivia!</button>
+    </div>
+    <div class="card fade-in" style="text-align:center">
+      <button class="btn btn-primary" style="background:#334155;color:#fbbf24;border-color:#475569" onclick="showLeaderboard()">🏆 Bekijk Leaderboard</button>
+    </div>
+    <div class="footer">TeamMade.be — Belgische Voetbal Trivia</div>
+  \`;
+  document.getElementById('nameInput').addEventListener('input',e=>{state.playerName=e.target.value});
+}
+
+function renderQuestion(){
+  const q=state.questions[state.current];
+  const progress=((state.current)/state.questions.length)*100;
+  const letters=['A','B','C','D'];
+
+  let optionsHtml=q.options.map((opt,i)=>{
+    let cls='btn btn-option';
+    if(state.revealed){
+      if(opt.isCorrect)cls+=' correct';
+      else if(state.selected===i&&!opt.isCorrect)cls+=' wrong';
+      else cls+=' disabled';
+    }else if(state.selected===i){cls+=' selected'}
+    return \`<div class="\${cls}" onclick="selectOpt(\${i})"><span class="letter">\${letters[i]}</span>\${opt.text}</div>\`;
+  }).join('');
+
+  app.innerHTML=\`
+    <div class="top-bar fade-in">
+      <span class="badge">\${state.current+1} / \${state.questions.length}</span>
+      <span class="score-display">⚽ \${state.score}</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:\${progress}%"></div></div>
+    <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
+    <div class="card fade-in">
+      <span class="category">\${q.category} · \${q.difficulty}</span>
+      <div class="question-text">\${q.question}</div>
+      \${optionsHtml}
+      \${state.revealed?\`<button class="btn btn-primary" style="margin-top:16px" onclick="nextQuestion()">\${state.current+1===state.questions.length?'🏁 Bekijk resultaat':'➡️ Volgende vraag'}</button>\`:''}
+    </div>
+  \`;
+  renderTimerOnly();
+}
+
+function renderResults(){
+  const pct=Math.round(state.score/state.questions.length*100);
+  let msg='';
+  if(pct>=90)msg='🏆 Fenomenaal!';
+  else if(pct>=70)msg='🥇 Uitstekend!';
+  else if(pct>=50)msg='👍 Goed gedaan!';
+  else if(pct>=30)msg='📚 Kan beter!';
+  else msg='😅 Volgende keer beter!';
+
+  const items=state.answers.map((a,i)=>{
+    const isCorrect=a.correct;
+    const correctOpt=a.q.options.find(o=>o.isCorrect).text;
+    const yourOpt=a.selected!==null?a.q.options[a.selected].text:'⏰ Tijd voorbij';
+    return \`<div class="result-item \${isCorrect?'correct':'wrong'}">
+      <div class="q">\${i+1}. \${a.q.question}</div>
+      <div class="a">\${isCorrect?
+        \`<span class="right">✓ \${correctOpt}</span>\`:
+        \`<span class="wr">✗ \${yourOpt}</span> → <span class="right">\${correctOpt}</span>\`
+      }</div>
+    </div>\`;
+  }).join('');
+
+  app.innerHTML=\`
+    <div class="logo"><h1>⚽ Resultaat</h1></div>
+    <div class="card fade-in">
+      <div class="result-score">\${state.score}/\${state.questions.length}</div>
+      <div class="result-pct">\${pct}% correct</div>
+      <div class="result-msg">\${msg}</div>
+      \${items}
+      <button class="btn btn-primary" style="margin-top:20px" onclick="resetGame()">🔄 Opnieuw spelen</button>
+      <button class="btn btn-primary" style="margin-top:10px;background:#334155;color:#fbbf24;border-color:#475569" onclick="showLeaderboard()">🏆 Leaderboard</button>
+    </div>
+    <div class="footer">TeamMade.be — Belgische Voetbal Trivia</div>
+  \`;
+}
+
+function renderLeaderboard(){
+  const sorted=[...state.scores].sort((a,b)=>b.pct-a.pct).slice(0,15);
+  const items=sorted.map((s,i)=>\`
+    <div class="leaderboard-item">
+      <span class="rank">\${i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.'}</span>
+      <span class="name">\${s.name||'Anoniem'}</span>
+      <span class="pts">\${s.pct}% (\${s.score}/\${s.total})</span>
+    </div>
+  \`).join('');
+
+  app.innerHTML=\`
+    <div class="logo"><h1>🏆 Leaderboard</h1></div>
+    <div class="card fade-in">
+      \${items||'<p style="text-align:center;color:#94a3b8">Nog geen scores. Speel een potje!</p>'}
+    </div>
+    <div class="card fade-in" style="text-align:center">
+      <button class="btn btn-primary" onclick="resetGame()">⬅️ Terug naar menu</button>
+    </div>
+    <div class="footer">TeamMade.be — Belgische Voetbal Trivia</div>
+  \`;
+}
+
+// ===== ACTIONS =====
+function setDiff(d){state.difficulty=d;render()}
+function startGame(){
+  if(!state.playerName.trim()){state.playerName='Anoniem'}
+  state.questions=getQuestions(state.difficulty);
+  state.current=0;state.score=0;state.selected=null;state.revealed=false;state.answers=[];
+  state.screen='play';
+  render();startTimer();
+}
+function selectOpt(i){
+  if(state.revealed)return;
+  stopTimer();
+  state.selected=i;state.revealed=true;
+  const q=state.questions[state.current];
+  const correct=q.options[i].isCorrect;
+  if(correct)state.score++;
+  state.answers.push({q,selected:i,correct});
+  render();
+}
+function nextQuestion(){
+  if(state.current+1>=state.questions.length){
+    stopTimer();
+    saveScore(state.playerName,state.score,state.questions.length);
+    state.screen='results';render();return;
+  }
+  state.current++;state.selected=null;state.revealed=false;
+  render();startTimer();
+}
+function resetGame(){stopTimer();state.screen='menu';render()}
+async function showLeaderboard(){await loadScores();state.screen='leaderboard';render()}
+
+// ===== INIT =====
+loadScores().then(()=>render());
+<\\/script>
+</body>
+</html>`;
+
+// ---- SCORES.PHP ----
+FILES.php = `<?php
+/**
+ * Belgische Voetbal Trivia - Scores API
+ * TeamMade.be
+ * 
+ * GET  ?action=get  → Geeft alle scores terug
+ * POST              → Slaat nieuwe score op
+ */
+
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+$scoresFile = __DIR__ . '/scores.json';
+$maxScores = 50;
+
+// Scores inlezen
+function loadScores($file) {
+    if (!file_exists($file)) {
+        file_put_contents($file, '[]');
+        return [];
+    }
+    $data = file_get_contents($file);
+    $scores = json_decode($data, true);
+    return is_array($scores) ? $scores : [];
+}
+
+// Scores opslaan
+function saveScores($file, $scores) {
+    file_put_contents($file, json_encode($scores, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+}
+
+// GET: scores ophalen
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $scores = loadScores($scoresFile);
+    echo json_encode($scores);
+    exit;
+}
+
+// POST: nieuwe score opslaan
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    if (!$input || !isset($input['name']) || !isset($input['score']) || !isset($input['total'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Ongeldige data. Verplicht: name, score, total']);
+        exit;
+    }
+    
+    // Sanitize input
+    $entry = [
+        'name'  => htmlspecialchars(substr(trim($input['name']), 0, 30)),
+        'score' => (int)$input['score'],
+        'total' => (int)$input['total'],
+        'pct'   => round(((int)$input['score'] / max((int)$input['total'], 1)) * 100),
+        'date'  => date('c')
+    ];
+    
+    $scores = loadScores($scoresFile);
+    $scores[] = $entry;
+    
+    // Sorteer op percentage (hoog naar laag), max bewaren
+    usort($scores, function($a, $b) { return $b['pct'] - $a['pct']; });
+    $scores = array_slice($scores, 0, $maxScores);
+    
+    saveScores($scoresFile, $scores);
+    
+    echo json_encode([
+        'success' => true,
+        'scores'  => $scores
+    ]);
+    exit;
+}
+
+http_response_code(405);
+echo json_encode(['error' => 'Method not allowed']);`;
+
+// ---- SCORES.JSON ----
+FILES.json = `[]`;
+
+// ---- SETUP GUIDE ----
+FILES.setup = `==============================================
+  SETUP GUIDE — Belgische Voetbal Trivia
+  TeamMade.be
+==============================================
+
+1. UPLOAD NAAR HOSTINGER
+   ─────────────────────
+   Ga naar Hostinger File Manager of gebruik FTP.
+   Upload de 3 bestanden naar:
+
+   public_html/belgische-voetbal-trivia/
+   ├── index.html
+   ├── scores.php
+   └── scores.json
+
+2. PERMISSIONS INSTELLEN
+   ─────────────────────
+   scores.json moet schrijfbaar zijn voor PHP:
+   → Rechtermuisklik op scores.json
+   → Permissions / chmod → 666 of 664
+   
+   De map zelf:
+   → chmod 755
+
+3. TESTEN
+   ──────
+   Open: https://jouwdomein.be/belgische-voetbal-trivia/
+   
+   Test de scores API:
+   → https://jouwdomein.be/belgische-voetbal-trivia/scores.php?action=get
+   → Moet [] teruggeven (lege array)
+
+4. VOLGENDE GAME TOEVOEGEN
+   ────────────────────────
+   Maak gewoon een nieuwe map:
+   
+   public_html/game-2-naam/
+   ├── index.html
+   ├── scores.php
+   └── scores.json
+   
+   Elke game = eigen mapje = geen conflicten.
+
+5. VRAGEN AANPASSEN
+   ─────────────────
+   Open index.html, zoek de QUESTIONS array.
+   Voeg toe:
+   
+   {
+     q: "Jouw vraag hier?",
+     o: ["Optie A","Optie B","Optie C","Optie D"],
+     c: 0,           // index van correct antwoord (0-3)
+     cat: "Clubs",   // categorie
+     diff: "makkelijk"  // makkelijk | gemiddeld | moeilijk
+   }
+
+6. TROUBLESHOOTING
+   ────────────────
+   PHP werkt niet?
+   → Check of je hosting PHP ondersteunt
+   → Scores worden dan via localStorage opgeslagen (fallback)
+   
+   Lege leaderboard?
+   → Check permissions van scores.json
+   → Test de PHP URL direct in je browser
+
+==============================================`;
+
+const FILE_LABELS = {
+  html: 'index.html — Het trivia spel',
+  php: 'scores.php — Highscores API',
+  json: 'scores.json — Data bestand',
+  setup: 'setup-guide.txt — Installatie instructies'
+};
+
+let currentTab = 'html';
+
+function showTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('fileLabel').textContent = FILE_LABELS[tab];
+  document.getElementById('codeContent').textContent = FILES[tab];
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(FILES[currentTab]).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✅ Gekopieerd!';
+    setTimeout(() => btn.textContent = '📋 Kopieer', 2000);
+  });
+}
+
+async function downloadZip() {
+  const zip = new JSZip();
+  const folder = zip.folder('belgische-voetbal-trivia');
+  folder.file('index.html', FILES.html);
+  folder.file('scores.php', FILES.php);
+  folder.file('scores.json', FILES.json);
+  folder.file('SETUP-GUIDE.txt', FILES.setup);
+
+  const blob = await zip.generateAsync({ type: 'blob' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'belgische-voetbal-trivia.zip';
+  a.click();
+  URL.revokeObjectURL(url);
+
+  const btn = document.querySelector('.download-btn');
+  btn.textContent = '✅ Gedownload!';
+  setTimeout(() => btn.textContent = '⬇ Download ZIP', 2500);
+}
+
+// Init
+showTab('html', document.querySelector('.tab.active'));
+</script>
+</body>
+</html>

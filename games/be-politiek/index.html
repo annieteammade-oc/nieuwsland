@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Belgische Politiek Trivia</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',sans-serif;background:#0f0f1a;color:#fff;min-height:100vh}
+  .container{max-width:720px;margin:0 auto;padding:16px}
+  .header{text-align:center;padding:32px 0 24px}
+  .header h1{font-size:2.6rem;font-weight:900;margin-bottom:8px;background:linear-gradient(135deg,#fbbf24,#f59e0b,#d97706);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .header .subtitle{font-size:1rem;color:#9ca3af}
+  .header .flag{font-size:3rem;margin-bottom:8px}
+  .card{background:#1a1a2e;border:2px solid #2a2a4a;border-radius:16px;padding:28px;margin-bottom:20px}
+  .card h2{font-size:1.3rem;font-weight:700;color:#fbbf24;margin-bottom:14px}
+  .btn-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .btn-grid-2{grid-template-columns:repeat(2,1fr)}
+  .btn-grid-4{grid-template-columns:repeat(4,1fr)}
+  .btn{padding:11px 14px;border-radius:10px;font-weight:600;font-size:.9rem;border:2px solid #3a3a5a;background:#2a2a4a;color:#fff;cursor:pointer;transition:all .15s;font-family:inherit}
+  .btn:hover{border-color:#fbbf24;background:#2a2a4a}
+  .btn.active{background:#fbbf24;color:#0f0f1a;border-color:#fbbf24}
+  .btn-primary{width:100%;padding:16px;border-radius:12px;font-size:1.15rem;font-weight:900;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0f0f1a;border:none;cursor:pointer;transition:all .15s;font-family:inherit}
+  .btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+  .btn-secondary{width:100%;padding:14px;border-radius:12px;font-size:1rem;font-weight:700;background:#2a2a4a;color:#fbbf24;border:2px solid #3a3a5a;cursor:pointer;font-family:inherit;margin-top:12px;transition:all .15s}
+  .btn-secondary:hover{border-color:#fbbf24}
+  .options{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+  .option-btn{width:100%;padding:15px 18px;border-radius:12px;font-weight:600;font-size:.95rem;border:2px solid #3a3a5a;background:#2a2a4a;color:#fff;cursor:pointer;transition:all .15s;text-align:left;font-family:inherit;display:flex;align-items:center;justify-content:space-between}
+  .option-btn:hover:not(.disabled){border-color:#fbbf24;background:#32325a}
+  .option-btn.selected{background:#fbbf24;color:#0f0f1a;border-color:#fbbf24}
+  .option-btn.correct{background:#34d399;color:#0f0f1a;border-color:#34d399}
+  .option-btn.wrong{background:#ef4444;color:#fff;border-color:#ef4444}
+  .option-btn.dimmed{background:#1a1a2e;color:#555;border-color:#2a2a3a}
+  .option-btn.disabled{cursor:default}
+  .option-letter{font-weight:900;margin-right:10px}
+  .option-check{font-size:1.1rem}
+  .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .top-bar span{font-weight:700;color:#fbbf24;font-size:1rem}
+  .progress-bar{width:100%;height:6px;background:#2a2a4a;border-radius:3px;margin-bottom:20px}
+  .progress-fill{height:100%;background:linear-gradient(90deg,#fbbf24,#f59e0b);border-radius:3px;transition:width .3s}
+  .category-badge{display:inline-block;padding:4px 14px;background:#fbbf24;color:#0f0f1a;border-radius:20px;font-size:.8rem;font-weight:700;margin-bottom:10px}
+  .question-text{font-size:1.25rem;font-weight:700;line-height:1.5;margin-bottom:20px}
+  .explanation{background:#1e3a2e;border:1px solid #34d399;border-radius:10px;padding:14px;margin-bottom:20px;font-size:.9rem;color:#a7f3d0;line-height:1.5}
+  .explanation strong{color:#34d399}
+  .score-big{font-size:3.5rem;font-weight:900;color:#fbbf24;margin-bottom:6px}
+  .score-pct{font-size:1.4rem;font-weight:700;margin-bottom:12px}
+  .score-msg{font-size:1.1rem;margin-bottom:28px}
+  .result-item{padding:14px;border-radius:10px;border:2px solid;margin-bottom:10px;text-align:left}
+  .result-item.correct{border-color:#34d399;background:rgba(52,211,153,.08)}
+  .result-item.wrong{border-color:#ef4444;background:rgba(239,68,68,.08)}
+  .result-item .q{font-weight:600;margin-bottom:5px;font-size:.95rem}
+  .result-item .a{font-size:.85rem}
+  .result-item .a.green{color:#34d399}
+  .result-item .a.red{color:#ef4444}
+  .result-item .expl{font-size:.8rem;color:#9ca3af;margin-top:4px;font-style:italic}
+  .score-table{width:100%;border-collapse:collapse}
+  .score-table th,.score-table td{padding:9px 10px;text-align:left;font-size:.85rem}
+  .score-table th{color:#9ca3af;border-bottom:2px solid #2a2a4a;font-weight:600}
+  .score-table td{border-bottom:1px solid #1a1a2e}
+  .rank-1{color:#fbbf24;font-weight:900}
+  .rank-2{color:#d1d5db;font-weight:700}
+  .rank-3{color:#d97706;font-weight:700}
+  .name-input{width:100%;padding:13px 16px;border-radius:10px;border:2px solid #3a3a5a;background:#2a2a4a;color:#fff;font-size:1rem;font-family:inherit;font-weight:600;margin-bottom:14px;outline:none;transition:border-color .15s}
+  .name-input:focus{border-color:#fbbf24}
+  .name-input::placeholder{color:#555}
+  .text-center{text-align:center}
+  .empty-state{text-align:center;padding:28px;color:#555;font-size:.95rem}
+  .stats-row{display:flex;gap:12px;margin-bottom:20px}
+  .stat-box{flex:1;background:#2a2a4a;border-radius:10px;padding:14px;text-align:center}
+  .stat-box .num{font-size:1.8rem;font-weight:900;color:#fbbf24}
+  .stat-box .label{font-size:.75rem;color:#9ca3af;margin-top:2px}
+  @media(max-width:500px){.btn-grid{grid-template-columns:repeat(2,1fr)}.btn-grid-4{grid-template-columns:repeat(2,1fr)}.header h1{font-size:2rem}.question-text{font-size:1.1rem}.stats-row{flex-wrap:wrap}.stat-box{min-width:calc(50% - 6px)}}
+</style>
+</head>
+<body>
+<div class="container" id="app"></div>
+<script>
+// ============================================================
+// 🇧🇪 BELGISCHE POLITIEK TRIVIA — 110 VRAGEN
+// ============================================================
+const Q = [
+  // === PARTIJEN & IDEOLOGIE ===
+  {c:"Partijen",q:"Welke Vlaamse partij heette vroeger 'Volksunie' en splitste in 2001?",o:["N-VA","Spirit","Beide zijn afsplitsingen","Vlaams Belang"],a:2,d:2,e:"De Volksunie splitste in N-VA (Nieuw-Vlaamse Alliantie) en Spirit (later SLP, nu opgegaan in andere partijen)."},
+  {c:"Partijen",q:"Onder welke naam was Vooruit eerder bekend?",o:["sp.a","BSP","PS","SPA"],a:0,d:1,e:"Vooruit heette tot 2021 sp.a (socialistische partij anders)."},
+  {c:"Partijen",q:"Welke partij wordt ook 'de blauwen' genoemd?",o:["N-VA","CD&V","Open VLD","Groen"],a:2,d:1,e:"De liberalen van Open VLD worden traditioneel geassocieerd met de kleur blauw."},
+  {c:"Partijen",q:"CD&V staat voor...",o:["Christen-Democratisch & Vlaams","Centrum Democraten Vlaanderen","Christelijke Democratische Volkspartij","Christen-Democraten Verbond"],a:0,d:1,e:"CD&V staat voluit voor Christen-Democratisch & Vlaams."},
+  {c:"Partijen",q:"Welke Franstalige partij is het equivalent van Open VLD?",o:["PS","MR","Ecolo","cdH"],a:1,d:1,e:"MR (Mouvement Réformateur) is de Franstalige liberale partij."},
+  {c:"Partijen",q:"PVDA/PTB is een partij van welke ideologische strekking?",o:["Liberaal","Christendemocratisch","Marxistisch","Ecologisch"],a:2,d:1,e:"PVDA/PTB omschrijft zichzelf als marxistisch."},
+  {c:"Partijen",q:"Hoe heette Vlaams Belang vóór 2004?",o:["Vlaams Blok","Volksunie","VMO","Vlaamse Concentratie"],a:0,d:1,e:"Na de veroordeling voor racisme werd Vlaams Blok in 2004 ontbonden en heropgericht als Vlaams Belang."},
+  {c:"Partijen",q:"Welke partij richtte Jean-Marie Dedecker op in 2007?",o:["N-VA","Lijst Dedecker","ROSSEM","Vivant"],a:1,d:2,e:"Lijst Dedecker (LDD) was een liberaal-conservatieve partij opgericht door Jean-Marie Dedecker."},
+  {c:"Partijen",q:"Ecolo is de Franstalige tegenhanger van welke Vlaamse partij?",o:["Vooruit","N-VA","Groen","PVDA"],a:2,d:1,e:"Groen en Ecolo zijn respectievelijk de Vlaamse en Franstalige groene partijen."},
+  {c:"Partijen",q:"In welk jaar werd N-VA opgericht?",o:["1999","2001","2003","2005"],a:1,d:2,e:"N-VA werd opgericht op 13 oktober 2001 na de splitsing van de Volksunie."},
+  {c:"Partijen",q:"Welke partij won de meeste stemmen bij de federale verkiezingen van 2024?",o:["Vooruit","Vlaams Belang","N-VA","MR"],a:2,d:2,e:"N-VA werd opnieuw de grootste partij bij de verkiezingen van 9 juni 2024."},
+  {c:"Partijen",q:"Hoe heet de Franstalige christendemocratische partij die zich in 2022 hernoemde?",o:["cdH","Les Engagés","MCC","PSC"],a:1,d:2,e:"cdH (Centre Démocrate Humaniste) werd in 2022 omgevormd tot Les Engagés."},
+
+  // === PREMIERS & REGERINGEN ===
+  {c:"Premiers",q:"Wie was de eerste premier van België?",o:["Erasme Surlet de Chokier","Félix de Muelenaere","Étienne de Sauvage","Joseph Lebeau"],a:0,d:3,e:"Erasme Surlet de Chokier was regent, maar de eerste echte premier was Étienne de Sauvage. Dit is een strikvraag — Surlet was regent, niet premier."},
+  {c:"Premiers",q:"Wie was de langst regerende premier van België?",o:["Wilfried Martens","Jean-Luc Dehaene","Paul-Henri Spaak","Achille Van Acker"],a:0,d:2,e:"Wilfried Martens was premier van 1979 tot 1992, met een korte onderbreking — de langstdienende premier."},
+  {c:"Premiers",q:"Alexander De Croo behoort tot welke partij?",o:["N-VA","CD&V","Open VLD","MR"],a:2,d:1,e:"Alexander De Croo is lid van Open VLD."},
+  {c:"Premiers",q:"Hoe wordt de regering-De Croo ook wel genoemd?",o:["De Zweedse coalitie","Vivaldi","Paars-groen","Blauw-geel"],a:1,d:1,e:"De regering-De Croo wordt de Vivaldi-coalitie genoemd (naar de vier seizoenen: 4 partijfamilies)."},
+  {c:"Premiers",q:"Wie was premier tijdens de dioxinecrisis van 1999?",o:["Guy Verhofstadt","Jean-Luc Dehaene","Wilfried Martens","Elio Di Rupo"],a:1,d:2,e:"Jean-Luc Dehaene was premier toen de dioxinecrisis uitbrak, wat bijdroeg aan zijn verkiezingsnederlaag in 1999."},
+  {c:"Premiers",q:"Wie was de eerste socialistische premier van België?",o:["Paul-Henri Spaak","Achille Van Acker","Elio Di Rupo","Louis Tobback"],a:1,d:3,e:"Achille Van Acker was de eerste socialistische premier (1945-1946)."},
+  {c:"Premiers",q:"Elio Di Rupo was de eerste Franstalige premier sinds...",o:["Paul Vanden Boeynants (1978)","Edmond Leburton (1974)","Gaston Eyskens (1973)","Wilfried Martens (1992)"],a:0,d:3,e:"Elio Di Rupo (2011-2014) was de eerste Franstalige premier sinds Paul Vanden Boeynants."},
+  {c:"Premiers",q:"Welke premier leidde zes opeenvolgende regeringen?",o:["Gaston Eyskens","Wilfried Martens","Leo Tindemans","Mark Eyskens"],a:1,d:2,e:"Wilfried Martens leidde Martens I t/m IX (met onderbrekingen)."},
+  {c:"Premiers",q:"Wie volgde Charles Michel op als premier?",o:["Alexander De Croo","Sophie Wilmès","Elio Di Rupo","Bart De Wever"],a:1,d:2,e:"Sophie Wilmès volgde Michel op in 2019 en was de eerste vrouwelijke premier van België."},
+  {c:"Premiers",q:"Wie was de eerste vrouwelijke premier van België?",o:["Maggie De Block","Sophie Wilmès","Petra De Sutter","Laurette Onkelinx"],a:1,d:1,e:"Sophie Wilmès werd in oktober 2019 de eerste vrouwelijke premier van België."},
+  {c:"Premiers",q:"Guy Verhofstadt was premier van welk jaar tot welk jaar?",o:["1995-2003","1999-2008","1999-2007","2003-2010"],a:1,d:2,e:"Guy Verhofstadt was premier van 1999 tot 2008 (Verhofstadt I, II en III)."},
+
+  // === SCHANDALEN ===
+  {c:"Schandalen",q:"Het Agusta-schandaal draaide om smeergeld bij de aankoop van...",o:["Tanks","Helikopters","Gevechtsvliegtuigen","Fregatten"],a:1,d:2,e:"Het Agusta-schandaal (jaren '90) betrof smeergeld bij de aankoop van Agusta-helikopters voor het Belgisch leger."},
+  {c:"Schandalen",q:"Welke partijen waren betrokken bij het Agusta-schandaal?",o:["CVP en PVV","SP en PS","VLD en MR","Agalev en Ecolo"],a:1,d:2,e:"Zowel de SP (nu Vooruit) als de PS ontvingen smeergeld van het Italiaanse Agusta."},
+  {c:"Schandalen",q:"De zaak-Dutroux leidde in 1996 tot welke massale betoging?",o:["De Zwarte Mars","De Witte Mars","De Stille Mars","De Mars op Brussel"],a:1,d:1,e:"De Witte Mars (20 oktober 1996) bracht 300.000 mensen samen in Brussel als protest tegen het falen van justitie."},
+  {c:"Schandalen",q:"Het KB Lux-schandaal ging over...",o:["Wapenhandel","Belastingfraude","Verkiezingsfraude","Mensenhandel"],a:1,d:2,e:"Het KB Lux-schandaal onthulde massale belastingontduiking via de Kredietbank Luxembourg."},
+  {c:"Schandalen",q:"Welk schandaal dwong premier Dehaene tot vervroegde verkiezingen in 1999?",o:["Agusta","De dioxinecrisis","Dutroux","KB Lux"],a:1,d:2,e:"De dioxinecrisis (besmetting van kippen- en varkensvlees) leidde tot de val van de regering-Dehaene II."},
+  {c:"Schandalen",q:"De Publifin-affaire speelde zich af in welke provincie?",o:["Henegouwen","Luik","Namen","Waals-Brabant"],a:1,d:2,e:"Publifin (intercommunale in de provincie Luik) was betrokken bij een schandaal rond overdreven vergoedingen."},
+  {c:"Schandalen",q:"Welke instelling was betrokken bij het Samusocial-schandaal in Brussel?",o:["Een daklozenorganisatie","Een ziekenhuis","Een school","Een museum"],a:0,d:2,e:"Samusocial, een Brusselse daklozenorganisatie, werd getroffen door een schandaal rond buitensporige zitpenningen."},
+  {c:"Schandalen",q:"De Fortis-crisis van 2008 leidde tot het ontslag van welke premier?",o:["Guy Verhofstadt","Yves Leterme","Herman Van Rompuy","Elio Di Rupo"],a:1,d:2,e:"Premier Yves Leterme moest aftreden na beschuldigingen van politieke inmenging in de Fortis-zaak."},
+  {c:"Schandalen",q:"Het UPLACE-project was controversieel omdat...",o:["Het een kerncentrale was","Het een megashoppingcenter was nabij Brussel","Het een gevangenis was","Het een luchthaven was"],a:1,d:2,e:"UPLACE was een omstreden megashoppingcenter-project in Machelen dat uiteindelijk niet doorging."},
+  {c:"Schandalen",q:"Welke politicus werd in het Kazachgate-schandaal genoemd?",o:["Didier Reynders","Armand De Decker","Charles Michel","Louis Michel"],a:1,d:3,e:"Armand De Decker (MR) werd beschuldigd van het lobbyen voor Kazachse zakenlui."},
+
+  // === STAATSSTRUCTUUR ===
+  {c:"Staatsstructuur",q:"Hoeveel gewesten heeft België?",o:["2","3","4","5"],a:1,d:1,e:"België heeft 3 gewesten: Vlaams Gewest, Waals Gewest en Brussels Hoofdstedelijk Gewest."},
+  {c:"Staatsstructuur",q:"Hoeveel gemeenschappen heeft België?",o:["2","3","4","5"],a:1,d:1,e:"België heeft 3 gemeenschappen: Vlaamse, Franse en Duitstalige Gemeenschap."},
+  {c:"Staatsstructuur",q:"In welk jaar werd België een federale staat?",o:["1970","1980","1989","1993"],a:3,d:2,e:"Met de vierde staatshervorming van 1993 werd België officieel een federale staat."},
+  {c:"Staatsstructuur",q:"Hoeveel staatshervormingen heeft België gehad?",o:["4","5","6","7"],a:2,d:2,e:"België heeft 6 staatshervormingen gehad (1970, 1980, 1988, 1993, 2001, 2011)."},
+  {c:"Staatsstructuur",q:"Brussel-Halle-Vilvoorde (BHV) werd gesplitst in welk jaar?",o:["2008","2011","2012","2014"],a:1,d:2,e:"De splitsing van het kiesarrondissement BHV werd geregeld in de zesde staatshervorming van 2011."},
+  {c:"Staatsstructuur",q:"Welk artikel van de Grondwet bepaalt dat België 4 taalgebieden heeft?",o:["Artikel 1","Artikel 4","Artikel 10","Artikel 35"],a:1,d:3,e:"Artikel 4 van de Belgische Grondwet definieert de vier taalgebieden."},
+  {c:"Staatsstructuur",q:"Hoeveel provincies heeft Vlaanderen?",o:["4","5","6","7"],a:1,d:1,e:"Vlaanderen heeft 5 provincies: Antwerpen, Limburg, Oost-Vlaanderen, West-Vlaanderen en Vlaams-Brabant."},
+  {c:"Staatsstructuur",q:"Het Belgisch parlement bestaat uit...",o:["Één kamer","Twee kamers","Drie kamers","Vier kamers"],a:1,d:1,e:"Het federaal parlement bestaat uit de Kamer van Volksvertegenwoordigers en de Senaat."},
+  {c:"Staatsstructuur",q:"Hoeveel zetels heeft de Kamer van Volksvertegenwoordigers?",o:["120","150","175","200"],a:1,d:2,e:"De Kamer van Volksvertegenwoordigers telt 150 zetels."},
+  {c:"Staatsstructuur",q:"Hoeveel zetels heeft het Vlaams Parlement?",o:["100","118","124","132"],a:2,d:3,e:"Het Vlaams Parlement telt 124 zetels."},
+
+  // === VOORZITTERS & LEIDERS ===
+  {c:"Leiders",q:"Wie is de voorzitter van N-VA (sinds 2004)?",o:["Jan Jambon","Theo Francken","Bart De Wever","Geert Bourgeois"],a:2,d:1,e:"Bart De Wever is voorzitter van N-VA sinds 2004."},
+  {c:"Leiders",q:"Wie werd in 2023 voorzitter van Vooruit?",o:["John Crombez","Melissa Depraetere","Conner Rousseau","Caroline Gennez"],a:2,d:2,e:"Conner Rousseau werd voorzitter van Vooruit. Nadien nam Melissa Depraetere tijdelijk over."},
+  {c:"Leiders",q:"Wie was de eerste voorzitter van Groen (toen nog Agalev)?",o:["Jos Geysels","Vera Dua","Mieke Vogels","Ferdinand Meert"],a:3,d:3,e:"Ferdinand (Ferd) Meert was één van de stichters van Agalev."},
+  {c:"Leiders",q:"Tom Van Grieken is voorzitter van welke partij?",o:["N-VA","Vlaams Belang","PVDA","CD&V"],a:1,d:1,e:"Tom Van Grieken is voorzitter van Vlaams Belang sinds 2014."},
+  {c:"Leiders",q:"Georges-Louis Bouchez is voorzitter van...",o:["PS","MR","Ecolo","Les Engagés"],a:1,d:2,e:"Georges-Louis Bouchez is voorzitter van MR."},
+  {c:"Leiders",q:"Wie was de legendarische CVP-voorzitter die 'De Machtigste' werd genoemd?",o:["Leo Tindemans","Wilfried Martens","Jean-Luc Dehaene","Herman Van Rompuy"],a:2,d:2,e:"Jean-Luc Dehaene kreeg de bijnaam 'De Lansen' en werd gezien als zeer machtig, maar 'De Machtigste' was een bijnaam die aan meerdere CVP-figuren werd gegeven."},
+  {c:"Leiders",q:"Wie leidde de PS als voorzitter van 1999 tot 2019?",o:["Philippe Moureaux","Elio Di Rupo","Laurette Onkelinx","Paul Magnette"],a:1,d:2,e:"Elio Di Rupo was voorzitter van de PS van 1999 tot 2019, waarna Paul Magnette hem opvolgde."},
+  {c:"Leiders",q:"Wie is Paul Magnette?",o:["Premier van België","Voorzitter van de PS","Voorzitter van Ecolo","Burgemeester van Brussel"],a:1,d:1,e:"Paul Magnette is voorzitter van de PS en burgemeester van Charleroi."},
+
+  // === VERKIEZINGEN ===
+  {c:"Verkiezingen",q:"Hoe vaak zijn er federale verkiezingen in België?",o:["Om de 3 jaar","Om de 4 jaar","Om de 5 jaar","Om de 6 jaar"],a:2,d:1,e:"Sinds 2014 vinden federale verkiezingen om de 5 jaar plaats."},
+  {c:"Verkiezingen",q:"Is stemmen in België verplicht?",o:["Ja, opkomstplicht","Nee, het is vrijwillig","Alleen voor Vlamingen","Alleen bij federale verkiezingen"],a:0,d:1,e:"België kent opkomstplicht: je bent verplicht om je aan te melden in het stemlokaal."},
+  {c:"Verkiezingen",q:"In welk jaar mochten Belgische vrouwen voor het eerst stemmen bij parlementsverkiezingen?",o:["1921","1936","1948","1960"],a:2,d:2,e:"Belgische vrouwen kregen volledig stemrecht voor parlementsverkiezingen in 1948."},
+  {c:"Verkiezingen",q:"Super Sunday 2024 combineerde welke verkiezingen?",o:["Federaal + regionaal","Federaal + Europees + regionaal","Federaal + gemeentelijk","Regionaal + provinciaal"],a:1,d:2,e:"Op 9 juni 2024 vielen de federale, regionale én Europese verkiezingen samen."},
+  {c:"Verkiezingen",q:"Welke leeftijd moet je hebben om te mogen stemmen in België?",o:["16 jaar","17 jaar","18 jaar","21 jaar"],a:2,d:1,e:"De stemgerechtigde leeftijd in België is 18 jaar (16 voor Europese verkiezingen sinds 2024)."},
+  {c:"Verkiezingen",q:"Vanaf welke leeftijd mochten jongeren stemmen voor de Europese verkiezingen in 2024?",o:["14","16","17","18"],a:1,d:2,e:"Sinds 2024 mogen 16-jarigen stemmen bij Europese verkiezingen in België."},
+
+  // === KONINGSHUIS & STAAT ===
+  {c:"Koningshuis",q:"Wie is de huidige koning van België?",o:["Albert II","Filip","Boudewijn","Leopold III"],a:1,d:1,e:"Koning Filip (Philippe) is koning sinds 21 juli 2013."},
+  {c:"Koningshuis",q:"Welke koning weigerde de abortuswet te ondertekenen in 1990?",o:["Leopold III","Albert II","Boudewijn","Filip"],a:2,d:2,e:"Koning Boudewijn verklaarde zich in 'onmogelijkheid om te regeren' om de abortuswet niet te moeten ondertekenen."},
+  {c:"Koningshuis",q:"In welk jaar werd België onafhankelijk?",o:["1815","1830","1839","1848"],a:1,d:1,e:"De Belgische revolutie brak uit in 1830. België werd internationaal erkend met het Verdrag van Londen in 1839."},
+  {c:"Koningshuis",q:"Wie was de eerste koning der Belgen?",o:["Leopold I","Leopold II","Albert I","Karel"],a:0,d:1,e:"Leopold I werd op 21 juli 1831 de eerste Koning der Belgen."},
+  {c:"Koningshuis",q:"De Koningskwestie na WOII ging over...",o:["De troonsafstand van Leopold III","De abortuswet","De taalgrens","De schoolstrijd"],a:0,d:2,e:"De Koningskwestie draaide om de terugkeer van Leopold III na zijn omstreden rol tijdens WOII."},
+  {c:"Koningshuis",q:"Delphine Boël werd in 2020 officieel erkend als...",o:["Nicht van de koning","Prinses van België","Hertogin van Brabant","Gravin van Vlaanderen"],a:1,d:2,e:"Na een jarenlange juridische strijd werd Delphine Boël erkend als dochter van Albert II en draagt ze de titel Prinses van België."},
+
+  // === PARLEMENTEN & INSTELLINGEN ===
+  {c:"Instellingen",q:"Waar vergadert het Vlaams Parlement?",o:["Paleis der Natiën","Het Halfhuis","Het Vlaams Parlement aan het Martelaarsplein","Het Egmontpaleis"],a:2,d:2,e:"Het Vlaams Parlement vergadert in een gebouw aan het Martelaarsplein in Brussel."},
+  {c:"Instellingen",q:"Wie is de voorzitter van het Grondwettelijk Hof?",o:["De premier","Een rechter benoemd door de koning","Er is geen Grondwettelijk Hof","Het rouleert"],a:1,d:3,e:"Het Grondwettelijk Hof (vroeger Arbitragehof) bestaat uit 12 rechters en heeft een voorzitter."},
+  {c:"Instellingen",q:"Wat is de Raad van State?",o:["Een adviesorgaan en administratief rechtscollege","Het kabinet van de premier","Een gemeenteraad","De ministerraad"],a:0,d:2,e:"De Raad van State is het hoogste administratieve rechtscollege en geeft adviezen over wetgeving."},
+  {c:"Instellingen",q:"Het OCMW staat voor...",o:["Openbaar Centrum voor Maatschappelijk Welzijn","Organisatie voor Centraal Medisch Welzijn","Officieel Comité voor Menselijk Welzijn","Open Centrum voor Multicultureel Werk"],a:0,d:1,e:"OCMW staat voor Openbaar Centrum voor Maatschappelijk Welzijn."},
+  {c:"Instellingen",q:"Hoeveel ministers telt een Belgische federale regering maximaal?",o:["10","15","18","20"],a:1,d:2,e:"De Belgische Grondwet beperkt het aantal federale ministers tot maximaal 15."},
+
+  // === HISTORISCHE FIGUREN ===
+  {c:"Historisch",q:"Wie was Paul-Henri Spaak?",o:["Een koning","Een premier en vader van de EU","Een kardinaal","Een generaal"],a:1,d:2,e:"Paul-Henri Spaak was premier en speelde een cruciale rol bij de oprichting van de EU en de NAVO."},
+  {c:"Historisch",q:"Welke Belg was de eerste vaste voorzitter van de Europese Raad?",o:["Guy Verhofstadt","Jean-Luc Dehaene","Herman Van Rompuy","Karel De Gucht"],a:2,d:2,e:"Herman Van Rompuy werd in 2009 de eerste vaste voorzitter van de Europese Raad."},
+  {c:"Historisch",q:"Wie was de 'Ombudsman van het volk' die bekend werd als burgemeester van Antwerpen?",o:["Patrick Janssens","Bob Cools","Bart De Wever","Luc Van den Brande"],a:0,d:3,e:"Patrick Janssens was een populaire burgemeester van Antwerpen (2003-2012) die de stad moderniseerde."},
+  {c:"Historisch",q:"Wie was de legendarische premier met de bijnaam 'de Lansen'?",o:["Wilfried Martens","Jean-Luc Dehaene","Leo Tindemans","Gaston Eyskens"],a:1,d:2,e:"Jean-Luc Dehaene kreeg de bijnaam 'de Lansen' vanwege zijn doortastende politieke stijl."},
+  {c:"Historisch",q:"Welke Belgische politicus gaf de beroemde 'wafelijzerpolitiek' zijn naam?",o:["Gaston Eyskens","Wilfried Martens","Theo Lefèvre","Paul Vanden Boeynants"],a:0,d:3,e:"De wafelijzerpolitiek (elke investering in Vlaanderen = gelijke investering in Wallonië) wordt geassocieerd met de naoorlogse Belgische politiek."},
+  {c:"Historisch",q:"Leo Tindemans was premier in de jaren...",o:["'60","'70","'80","'90"],a:1,d:2,e:"Leo Tindemans was premier van 1974 tot 1978."},
+
+  // === REGERINGSVORMING ===
+  {c:"Vorming",q:"Hoeveel dagen duurde de langste regeringsvorming in België?",o:["289","389","541","652"],a:2,d:2,e:"Na de verkiezingen van 2010 duurde het 541 dagen voor de regering-Di Rupo werd gevormd — een wereldrecord."},
+  {c:"Vorming",q:"Wat is een 'informateur' bij de regeringsvorming?",o:["Iemand die de pers informeert","Iemand die de standpunten van partijen aftast","De toekomstige premier","Een rechter"],a:1,d:1,e:"Een informateur wordt door de koning aangesteld om te onderzoeken welke coalities mogelijk zijn."},
+  {c:"Vorming",q:"Wat is een 'formateur'?",o:["De toekomstige premier die de regering vormt","Een juridisch adviseur","De kamervoorzitter","Een minister van Staat"],a:0,d:1,e:"De formateur is degene die de eigenlijke regering samenstelt en meestal de toekomstige premier wordt."},
+  {c:"Vorming",q:"Welke coalitie wordt 'Paars' genoemd?",o:["Socialisten + liberalen","Christendemocraten + groenen","Socialisten + groenen","Liberalen + nationalisten"],a:0,d:1,e:"Paars = rood (socialisten) + blauw (liberalen). Paars was de kleur van Verhofstadt I en II."},
+  {c:"Vorming",q:"Welke coalitie wordt 'Zweeds' genoemd?",o:["N-VA + CD&V + Open VLD + MR","Alle Vlaamse partijen","N-VA + Vlaams Belang","PS + MR + Ecolo"],a:0,d:2,e:"De Zweedse coalitie (2014-2018) bestond uit N-VA, CD&V, Open VLD en MR — de kleuren blauw en geel verwijzen naar de Zweedse vlag."},
+  {c:"Vorming",q:"Wat is het 'cordon sanitaire'?",o:["Een medische maatregel","Een afspraak om niet samen te werken met Vlaams Belang","Een grondwetsartikel","Een Europese regel"],a:1,d:1,e:"Het cordon sanitaire is de afspraak tussen partijen om geen coalitie te vormen met Vlaams Belang."},
+
+  // === GEMEENTEPOLITIEK ===
+  {c:"Lokaal",q:"Wie is de langst regerende burgemeester van Brussel?",o:["Freddy Thielemans","Philippe Close","Charles Picqué","Adolphe Max"],a:0,d:3,e:"Freddy Thielemans was burgemeester van Brussel-Stad van 2001 tot 2013."},
+  {c:"Lokaal",q:"Bart De Wever is burgemeester van welke stad?",o:["Brussel","Gent","Antwerpen","Mechelen"],a:2,d:1,e:"Bart De Wever is burgemeester van Antwerpen sinds 2013."},
+  {c:"Lokaal",q:"Hoeveel gemeenten heeft België?",o:["489","581","609","625"],a:1,d:3,e:"België telt 581 gemeenten."},
+  {c:"Lokaal",q:"De faciliteitengemeenten rond Brussel zijn gemeenten waar...",o:["Geen belastingen worden geheven","Franstaligen taalkundige faciliteiten krijgen","Alleen Nederlands wordt gesproken","Brusselaars gratis kunnen parkeren"],a:1,d:2,e:"Faciliteitengemeenten in de Vlaamse rand bieden taalfaciliteiten aan Franstalige inwoners."},
+  {c:"Lokaal",q:"Hoeveel Vlaamse randgemeenten rond Brussel hebben faciliteiten?",o:["3","4","6","8"],a:2,d:3,e:"Er zijn 6 faciliteitengemeenten in de Vlaamse rand: Drogenbos, Kraainem, Linkebeek, Sint-Genesius-Rode, Wemmel en Wezembeek-Oppem."},
+
+  // === EUROPESE POLITIEK ===
+  {c:"Europa",q:"Waar zetelt het Europees Parlement (één van de zetels)?",o:["Brussel","Gent","Antwerpen","Luik"],a:0,d:1,e:"Brussel is één van de drie werklocaties van het Europees Parlement (naast Straatsburg en Luxemburg)."},
+  {c:"Europa",q:"Welke Belgische premier werd EU-president?",o:["Guy Verhofstadt","Herman Van Rompuy","Jean-Luc Dehaene","Wilfried Martens"],a:1,d:1,e:"Herman Van Rompuy werd in 2009 de eerste vaste voorzitter van de Europese Raad."},
+  {c:"Europa",q:"Guy Verhofstadt was in het Europees Parlement leider van welke fractie?",o:["Socialisten","Groenen","Liberalen (ALDE/Renew)","Conservatieven"],a:2,d:2,e:"Verhofstadt leidde de liberale ALDE-fractie (later Renew Europe) in het Europees Parlement."},
+  {c:"Europa",q:"België was medeoprichter van welke Europese organisatie in 1957?",o:["De NAVO","De EEG (voorloper EU)","De Raad van Europa","De OESO"],a:1,d:2,e:"België was in 1957 één van de zes oprichters van de EEG via het Verdrag van Rome."},
+
+  // === TAALSTRIJD & COMMUNAUTAIR ===
+  {c:"Communautair",q:"Wanneer werd de taalgrens in België wettelijk vastgelegd?",o:["1932","1948","1962","1970"],a:2,d:2,e:"De taalgrens werd in 1962 wettelijk vastgelegd."},
+  {c:"Communautair",q:"De Marsen op Brussel in de jaren '60 werden georganiseerd door...",o:["Franstaligen","Vlamingen","Brusselaars","Walen"],a:1,d:2,e:"De Vlaamse Marsen op Brussel (1961-1962) eisten de vastlegging van de taalgrens."},
+  {c:"Communautair",q:"'Walen buiten!' was een slogan bij welk conflict?",o:["De Koningskwestie","De Leuvense universiteitscrisis","De schoolstrijd","De mijnstakingen"],a:1,d:2,e:"'Walen buiten!' (Leuven Vlaams) was de slogan bij de splitsing van de Katholieke Universiteit Leuven in 1968."},
+  {c:"Communautair",q:"Wanneer splitste de Katholieke Universiteit Leuven?",o:["1960","1965","1968","1970"],a:2,d:2,e:"In 1968 werd de KU Leuven gesplitst in een Nederlandstalige (KU Leuven) en Franstalige (UCLouvain) universiteit."},
+  {c:"Communautair",q:"Hoeveel taalgebieden heeft België?",o:["2","3","4","5"],a:2,d:1,e:"België heeft 4 taalgebieden: Nederlands, Frans, Duits en het tweetalige Brussel-Hoofdstad."},
+
+  // === RECENTE POLITIEK ===
+  {c:"Recent",q:"Welke minister werd bekend als 'Maggie' tijdens de asielcrisis?",o:["Maggie De Block","Zuhal Demir","Annelies Verlinden","Nicole de Moor"],a:0,d:1,e:"Maggie De Block (Open VLD) was staatssecretaris voor Asiel en Migratie en werd bekend om haar strenge aanpak."},
+  {c:"Recent",q:"Welke partij verliet de federale regering in december 2018?",o:["CD&V","Open VLD","N-VA","MR"],a:2,d:2,e:"N-VA verliet de regering-Michel in december 2018 vanwege onenigheid over het VN-Migratiepact van Marrakech."},
+  {c:"Recent",q:"Het VN-Migratiepact dat de regering-Michel deed vallen, werd ondertekend in...",o:["New York","Genève","Marrakech","Parijs"],a:2,d:2,e:"Het was het VN-Migratiepact van Marrakech (2018) dat de breuk in de Zweedse coalitie veroorzaakte."},
+  {c:"Recent",q:"Petra De Sutter was de eerste transgender minister in...",o:["Vlaanderen","Europa","De wereld","België"],a:1,d:2,e:"Petra De Sutter (Groen) werd in 2020 de eerste openlijk transgender minister in Europa."},
+  {c:"Recent",q:"Theo Francken was staatssecretaris voor...",o:["Financiën","Asiel en Migratie","Defensie","Justitie"],a:1,d:1,e:"Theo Francken (N-VA) was staatssecretaris voor Asiel en Migratie in de regering-Michel."},
+  {c:"Recent",q:"Welke politicus lanceerde de term 'Vivaldi-coalitie'?",o:["Alexander De Croo","Paul Magnette","Bart De Wever","Egbert Lachaert"],a:2,d:3,e:"Bart De Wever gebruikte de term 'Vivaldi' (vier seizoenen = vier politieke families) oorspronkelijk als kritiek."},
+  {c:"Recent",q:"De 'kernuitstap' was een plan om...",o:["Uit de EU te stappen","Alle kerncentrales te sluiten","De monarchie af te schaffen","De Senaat op te heffen"],a:1,d:1,e:"De kernuitstap was het plan om alle Belgische kerncentrales te sluiten, later gedeeltelijk herzien."},
+  {c:"Recent",q:"Zuhal Demir was Vlaams minister van...",o:["Onderwijs","Omgeving","Economie","Welzijn"],a:1,d:2,e:"Zuhal Demir (N-VA) was Vlaams minister van Justitie, Handhaving, Omgeving, Energie en Toerisme."},
+];
+
+const CATEGORY_MAP = {
+  "Partijen":"🏛️","Premiers":"👔","Schandalen":"💣","Staatsstructuur":"🏗️",
+  "Leiders":"👑","Verkiezingen":"🗳️","Koningshuis":"👸","Instellingen":"🏢",
+  "Historisch":"📜","Vorming":"🤝","Lokaal":"🏘️","Europa":"🇪🇺",
+  "Communautair":"🗣️","Recent":"📰"
+};
+
+const ALL_CATEGORIES = [...new Set(Q.map(q => q.c))];
+const DIFF_LABELS = {1:"Makkelijk",2:"Gemiddeld",3:"Moeilijk"};
+const NUM_OPTIONS = [10,15,20,30];
+
+// ============================================================
+// SCORE MANAGEMENT
+// ============================================================
+const SM = {
+  scores: [],
+  async load() {
+    try {
+      const r = await fetch('get_scores.php');
+      if (r.ok) { const d = await r.json(); if (Array.isArray(d)) { this.scores = d; return; } }
+    } catch(e) {}
+    try { this.scores = JSON.parse(localStorage.getItem('bepol_scores') || '[]'); } catch(e) { this.scores = []; }
+  },
+  async save(entry) {
+    this.scores.push(entry);
+    this.scores.sort((a,b) => b.percentage - a.percentage || b.score - a.score);
+    this.scores = this.scores.slice(0, 50);
+    localStorage.setItem('bepol_scores', JSON.stringify(this.scores));
+    try { await fetch('save_score.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(entry) }); } catch(e) {}
+  },
+  top(n=15) { return this.scores.slice(0,n); }
+};
+
+// ============================================================
+// APP STATE
+// ============================================================
+const app = document.getElementById('app');
+let S = {
+  screen:'setup', cats:[], diff:0, num:15, questions:[], cur:0,
+  sel:null, show:false, score:0, answers:[], name: localStorage.getItem('bepol_player')||''
+};
+
+function shuffle(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function pick() {
+  let pool = Q.filter(q => S.cats.includes(q.c));
+  if (S.diff > 0) pool = pool.filter(q => q.d === S.diff);
+  return shuffle(pool).slice(0, S.num);
+}
+
+function render() {
+  switch(S.screen) {
+    case 'setup': rSetup(); break;
+    case 'playing': rPlay(); break;
+    case 'results': rResults(); break;
+    case 'board': rBoard(); break;
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ---- SETUP ----
+function rSetup() {
+  const diffBtns = [{v:0,l:'Alle'},{v:1,l:'Makkelijk'},{v:2,l:'Gemiddeld'},{v:3,l:'Moeilijk'}];
+  app.innerHTML = `
+    <div class="header">
+      <div class="flag">🇧🇪</div>
+      <h1>Belgische Politiek Trivia</h1>
+      <p class="subtitle">Test je kennis over Belgische politiekers, partijen, schandalen & meer!</p>
+    </div>
+    <div class="card">
+      <h2>👤 Jouw naam</h2>
+      <input class="name-input" id="ni" type="text" placeholder="Typ je naam..." value="${S.name}" maxlength="20">
+    </div>
+    <div class="card">
+      <h2>📂 Categorieën <span style="font-size:.8rem;color:#9ca3af;font-weight:400">(${Q.length} vragen totaal)</span></h2>
+      <div class="btn-grid">
+        ${ALL_CATEGORIES.map(c => {
+          const cnt = Q.filter(q=>q.c===c).length;
+          return `<button class="btn ${S.cats.includes(c)?'active':''}" onclick="tCat('${c}')">${CATEGORY_MAP[c]||''} ${c} <span style="font-size:.7rem;opacity:.7">(${cnt})</span></button>`;
+        }).join('')}
+        <button class="btn ${S.cats.length===ALL_CATEGORIES.length?'active':''}" onclick="allCat()">✅ Alles</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>📊 Moeilijkheid</h2>
+      <div class="btn-grid btn-grid-4">
+        ${diffBtns.map(d => `<button class="btn ${S.diff===d.v?'active':''}" onclick="setD(${d.v})">${d.l}</button>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <h2>🔢 Aantal vragen</h2>
+      <div class="btn-grid btn-grid-4">
+        ${NUM_OPTIONS.map(n => `<button class="btn ${S.num===n?'active':''}" onclick="setN(${n})">${n}</button>`).join('')}
+      </div>
+    </div>
+    <button class="btn-primary" onclick="startG()">🚀 Start het spel</button>
+    <button class="btn-secondary" onclick="showB()">🏆 Scorebord bekijken</button>
+  `;
+  document.getElementById('ni').addEventListener('input', e => { S.name=e.target.value; localStorage.setItem('bepol_player',S.name); });
+}
+
+window.tCat = c => { S.cats.includes(c)?S.cats=S.cats.filter(x=>x!==c):S.cats.push(c); render(); };
+window.allCat = () => { S.cats = S.cats.length===ALL_CATEGORIES.length ? [] : [...ALL_CATEGORIES]; render(); };
+window.setD = d => { S.diff=d; render(); };
+window.setN = n => { S.num=n; render(); };
+
+window.startG = () => {
+  if(!S.cats.length){alert('Selecteer minstens één categorie!');return;}
+  if(!S.name.trim()){alert('Vul je naam in!');return;}
+  S.questions=pick();
+  if(!S.questions.length){alert('Geen vragen beschikbaar voor deze combinatie!');return;}
+  S.cur=0;S.sel=null;S.show=false;S.score=0;S.answers=[];S.screen='playing';render();
+};
+
+// ---- PLAYING ----
+function rPlay() {
+  const q=S.questions[S.cur];
+  const pct=((S.cur)/S.questions.length*100).toFixed(0);
+  const L=['A','B','C','D'];
+  app.innerHTML = `
+    <div class="top-bar">
+      <span>Vraag ${S.cur+1} van ${S.questions.length}</span>
+      <span>Score: ${S.score}</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="card">
+      <span class="category-badge">${CATEGORY_MAP[q.c]||''} ${q.c} · ${DIFF_LABELS[q.d]||''}</span>
+      <div class="question-text">${q.q}</div>
+      <div class="options">
+        ${q.o.map((opt,i)=>{
+          let cls='option-btn',chk='';
+          if(S.show){
+            cls+=' disabled';
+            if(i===q.a){cls+=' correct';chk='✓';}
+            else if(i===S.sel){cls+=' wrong';chk='✗';}
+            else{cls+=' dimmed';}
+          } else if(S.sel===i){cls+=' selected';}
+          return `<button class="${cls}" ${S.show?'':'onclick="selO('+i+')"'}><span><span class="option-letter">${L[i]}.</span>${opt}</span><span class="option-check">${chk}</span></button>`;
+        }).join('')}
+      </div>
+      ${S.show && q.e ? `<div class="explanation"><strong>💡 Uitleg:</strong> ${q.e}</div>` : ''}
+      <button class="btn-primary" onclick="next()">
+        ${!S.show?'✅ Controleer antwoord':S.cur+1>=S.questions.length?'🏁 Bekijk resultaten':'➡️ Volgende vraag'}
+      </button>
+    </div>
+  `;
+}
+
+window.selO = i => { S.sel=i; render(); };
+
+window.next = () => {
+  if(S.sel===null){alert('Selecteer een antwoord!');return;}
+  if(!S.show){S.show=true;render();return;}
+  const q=S.questions[S.cur];
+  const ok=S.sel===q.a;
+  S.answers.push({qi:S.cur,sel:S.sel,correct:ok});
+  if(ok)S.score++;
+  if(S.cur+1<S.questions.length){S.cur++;S.sel=null;S.show=false;S.screen='playing';}
+  else{
+    S.screen='results';
+    const p=Math.round((S.score/S.questions.length)*100);
+    SM.save({name:S.name.trim(),score:S.score,total:S.questions.length,percentage:p,difficulty:S.diff===0?'Alle':DIFF_LABELS[S.diff],date:new Date().toISOString().split('T')[0]});
+  }
+  render();
+};
+
+// ---- RESULTS ----
+function rResults() {
+  const p=Math.round((S.score/S.questions.length)*100);
+  let msg='📚 Blijf oefenen!';
+  if(p>=90)msg='🏆 Expert! Je kent de Wetstraat als je broekzak!';
+  else if(p>=70)msg='👍 Goed gedaan! Je volgt de politiek duidelijk.';
+  else if(p>=50)msg='👌 Niet slecht, maar er is nog werk aan!';
+
+  app.innerHTML = `
+    <div class="header"><div class="flag">🇧🇪</div><h1>Resultaten</h1></div>
+    <div class="card text-center">
+      <div class="stats-row">
+        <div class="stat-box"><div class="num">${S.score}</div><div class="label">Correct</div></div>
+        <div class="stat-box"><div class="num">${S.questions.length-S.score}</div><div class="label">Fout</div></div>
+        <div class="stat-box"><div class="num">${p}%</div><div class="label">Score</div></div>
+      </div>
+      <div class="score-msg">${msg}</div>
+    </div>
+    <div class="card">
+      <h2>📋 Overzicht</h2>
+      ${S.answers.map((ans,i)=>{
+        const q=S.questions[ans.qi];
+        return `<div class="result-item ${ans.correct?'correct':'wrong'}">
+          <div class="q">${i+1}. ${q.q}</div>
+          <div class="a ${ans.correct?'green':'red'}">Jouw antwoord: ${q.o[ans.sel]}</div>
+          ${!ans.correct?`<div class="a green">Correct: ${q.o[q.a]}</div>`:''}
+          ${q.e?`<div class="expl">💡 ${q.e}</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>
+    <button class="btn-primary" onclick="S.screen='setup';render()">🔄 Opnieuw spelen</button>
+    <button class="btn-secondary" onclick="showB()">🏆 Scorebord</button>
+  `;
+}
+
+// ---- SCOREBOARD ----
+window.showB = async () => { S.screen='board'; await SM.load(); rBoardView(); };
+function rBoard() { SM.load().then(()=>rBoardView()); }
+function rBoardView() {
+  const top=SM.top(15);
+  const rc=i=>i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
+  app.innerHTML = `
+    <div class="header"><div class="flag">🏆</div><h1>Scorebord</h1><p class="subtitle">Wie is de beste politieke kenner?</p></div>
+    <div class="card">
+      ${top.length?`
+        <table class="score-table">
+          <thead><tr><th>#</th><th>Speler</th><th>Score</th><th>%</th><th>Niveau</th><th>Datum</th></tr></thead>
+          <tbody>${top.map((s,i)=>`
+            <tr><td class="${rc(i)}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
+            <td>${s.name}</td><td>${s.score}/${s.total}</td>
+            <td style="color:#fbbf24;font-weight:700">${s.percentage}%</td>
+            <td>${s.difficulty||'-'}</td><td>${s.date||'-'}</td></tr>
+          `).join('')}</tbody>
+        </table>
+      `:'<div class="empty-state">Nog geen scores. Speel een spel!</div>'}
+    </div>
+    <button class="btn-primary" onclick="S.screen='setup';render()">⬅️ Terug naar menu</button>
+    ${top.length?`<button class="btn-secondary" style="border-color:#ef4444;color:#ef4444" onclick="clrS()">🗑️ Scores wissen</button>`:''}
+  `;
+}
+window.clrS = () => { if(confirm('Alle scores wissen?')){SM.scores=[];localStorage.removeItem('bepol_scores');rBoardView();} };
+
+SM.load().then(()=>render());
+</script>
+</body>
+</html>

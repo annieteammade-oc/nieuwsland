@@ -1,0 +1,98 @@
+[
+  {
+    "topic": {
+      "row_index": 2,
+      "found_at": "2026-02-26 1:55",
+      "category": "tech",
+      "source": "The Verge",
+      "title": "New York sues Valve, alleging its loot boxes are ‘quintessential gambling’",
+      "link": "https://www.theverge.com/games/884978/valve-lawsuit-loot-boxes-new-york-attorney-general-lawsuit",
+      "score": 3,
+      "reden": ""
+    },
+    "article": "TITEL: New York klaagt Valve aan: 'Loot boxes zijn pure gokpraktijken'\nSUBTITEL: De procureur-generaal van New York wil een einde maken aan de verkoop van virtuele items met een willekeurige uitkomst, die volgens haar de jeugd in de greep houdt.\nTAGS: Valve, loot boxes, gokken, New York, Counter-Strike, gaming, rechtspraak\nAFBEELDING: Een close-up van een digitaal geopende loot box in een videogame, met glimmende, virtuele items die eruit komen. Op de achtergrond is subtiel het logo van Valve of...",
+    "discord_msg_id": "1476382549990183102",
+    "written_at": "2026-02-26 01:57",
+    "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 3,
+      "found_at": "2026-02-26 1:55",
+      "category": "tech",
+      "source": "The Verge",
+      "title": "How the new Galaxy S26 phones stack up against each other on paper",
+      "link": "https://www.theverge.com/gadgets/883733/samsung-galaxy-s26-vs-plus-ultra-specs-features-hardware-comparison",
+      "score": 3,
+      "reden": ""
+    },
+    "article": "TITEL: Samsung Galaxy S26-reeks uit de doeken: AI-power en hardwareverschillen onder de loep\nSUBTITEL: De nieuwste vlaggenschepen van Samsung beloven baanbrekende AI-functies en verbeterde prestaties, maar hoe verhouden de S26, S26 Plus en S26 Ultra zich tot elkaar op papier?\nTAGS: Samsung, Galaxy S26, smartphone, AI, tech, vergelijking, specificaties\nAFBEELDING: Drie Samsung Galaxy S26 smartphones (S26, S26 Plus, S26 Ultra) naast elkaar liggend op een strakke, moderne ondergrond, waarbij de ver...",
+    "discord_msg_id": "1476382615635497032",
+    "written_at": "2026-02-26 01:57",
+    "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 108,
+      "found_at": "2026-02-26 6:00",
+      "category": "belgium",
+      "source": "VRT NWS",
+      "title": "\"Dankzij Vertrouwenscentrum besefte ik dat het niet mijn schuld was\": Sara over hulp na misbruik door stiefvader",
+      "link": "https://vrtnws.be/p.3B6aN9MNP",
+      "score": 5,
+      "reden": "Belgisch maatschappelijk probleem, herkenbaar, emotioneel."
+    },
+    "article": "TITEL: \"Het was niet mijn schuld\": Sara's moedige verhaal over hulp na misbruik door stiefvader\nSUBTITEL: De cruciale rol van Vertrouwenscentra Kindermishandeling in het herstel van slachtoffers\nTAGS: kindermishandeling, misbruik, Vertrouwenscentrum Kindermishandeling, slachtofferhulp, VRT NWS\nAFBEELDING: Een close-up van een jonge vrouw (Sara, 30-er jaren) die sereen naar buiten kijkt, met een zachte, hoopvolle lichtinval. De focus ligt op haar gezichtsuitdrukking die veerkracht en innerlijke k...",
+    "discord_msg_id": "1476466511756398674",
+    "written_at": "2026-02-26 07:30",
+    "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 109,
+      "found_at": "2026-02-26 6:00",
+      "category": "belgium",
+      "source": "VRT NWS",
+      "title": "\"We kunnen kinderen in nood niet snel genoeg helpen\": Vertrouwencentra Kindermishandeling trekken aan alarmbel",
+      "link": "https://vrtnws.be/p.0Y6WlYJYm",
+      "score": 5,
+      "reden": "Belgisch maatschappelijk probleem, urgentie, beleidsrelevantie."
+    },
+    "article": "TITEL: \"We kunnen kinderen in nood niet snel genoeg helpen\": Vertrouwenscentra Kindermishandeling luiden de alarmbel\nSUBTITEL: Toenemende werkdruk en personeelstekort belemmeren essentiële hulp aan mishandelde kinderen\nTAGS: Kindermishandeling, Vertrouwenscentra, Jeugdzorg, Noodsituatie, Vlaanderen\nAFBEELDING: Een close-up van een kind (onherkenbaar, bijvoorbeeld van achteren gefotografeerd) dat een hand vasthoudt van een volwassene, met op de achtergrond een onscherpe, maar drukke kantooromgevi...",
+    "discord_msg_id": "1476466579892994132",
+    "written_at": "2026-02-26 07:31",
+    "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 110,
+      "found_at": "2026-02-26 6:00",
+      "category": "belgium",
+      "source": "VRT NWS",
+      "title": "Nieuwe erfeniswijzer toont wie je erfgenamen zijn: \"Erfrecht wordt al snel complex voor mensen\"",
+      "link": "https://vrtnws.be/p.XElambjK0",
+      "score": 5,
+      "reden": "Directe relevantie voor Belgische burgers, praktisch."
+    },
+    "article": "TITEL: **Nieuwe erfeniswijzer van notarissen werpt licht op complexe familiebanden: \"Veel Belgen verrast door wie hun erfgenamen zijn\"**\nSUBTITEL: De federatie van Belgische notarissen lanceert een online tool die duidelijkheid schept over wie uw erfgenamen zijn en welk deel zij erven. Vooral voor nieuw samengestelde gezinnen kan dit een eye-opener zijn.\nTAGS: erfrecht, notaris, erfenis, online tool, België, gezinsplanning\nAFBEELDING: Een illustratie van een familieknoop of een stamboom, met op ...",
+    "discord_msg_id": "1476527065384878130",
+    "written_at": "2026-02-26 11:31",
+    "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 114,
+      "found_at": "2026-02-26 6:00",
+      "category": "belgium",
+      "source": "HLN",
+      "title": "Tienduizenden Vlamingen riskeren boete voor ongeregistreerde thuislaadpaal",
+      "link": "https://www.hln.be/binnenland/tienduizenden-vlamingen-riskeren-boete-voor-ongeregistreerde-thuislaadpaal~a20b33d2/",
+      "score": 5,
+      "reden": "Directe impact op Belgische burgers, financiële gevolgen."
+    },
+    "article": "TITEL: Tienduizenden Vlamingen riskeren fikse boete voor ongemelde laadpaal\nSUBTITEL: Vergeet niet uw thuislaadpunt aan te geven, anders dreigt een sanctie van honderden euro's\nTAGS: laadpalen, Vlaanderen, boete, elektrische auto, registratie\nAFBEELDING: Een close-up van een laadkabel die in een elektrische auto wordt gestoken, met op de achtergrond een residentieel huis en eventueel een subtiel registratieformulier.\n\nDe opkomst van de elektrische auto gaat hand in hand met de installatie van **...",
+    "discord_msg_id": "1476527136721604608",
+    "written_at": "2026-02-26 11:31",
+    "status": "REVIEW"
+  }
+]

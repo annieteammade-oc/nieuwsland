@@ -9,6 +9,10 @@ export const revalidate = 300;
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://nieuwsland.be"),
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
   title: {
     default: "Nieuwsland.be | Laatste nieuws uit Belgie en de wereld",
     template: "%s | Nieuwsland.be",

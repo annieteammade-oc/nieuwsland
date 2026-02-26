@@ -31,14 +31,17 @@ export function Footer() {
       {/* Nieuwsbrief balk */}
       <section className="bg-gradient-to-r from-[#1E3A8A] via-[#1E3A8A] to-[#0F245E] text-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-10 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-200">Nieuwsbrief</p>
-            <p className="mt-2 text-3xl font-black uppercase tracking-tight sm:text-4xl">
-              Blijf elke dag als eerste op de hoogte
-            </p>
-            <p className="mt-2 max-w-xl text-sm text-blue-100">
-              Schrijf je in voor de Nieuwsland nieuwsbrief met de grootste verhalen, duiding en video.
-            </p>
+          <div className="flex items-start gap-5">
+            <Image src="/logo/nieuwsland-above-footerlogo.png" alt="Nieuwsland" width={64} height={64} className="flex-shrink-0 mt-1" />
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-200">Nieuwsbrief</p>
+              <p className="mt-2 text-3xl font-black uppercase tracking-tight sm:text-4xl">
+                Blijf elke dag als eerste op de hoogte
+              </p>
+              <p className="mt-2 max-w-xl text-sm text-blue-100">
+                Schrijf je in voor de Nieuwsland nieuwsbrief met de grootste verhalen, duiding en video.
+              </p>
+            </div>
           </div>
           <form className="flex w-full max-w-xl flex-col gap-3 sm:flex-row">
             <input
@@ -83,7 +86,7 @@ export function Footer() {
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           {/* Nieuwsland logo above columns */}
           <div className="mb-8">
-            <Image src="/logo/favicon.png" alt="Nieuwsland" width={48} height={48} />
+            <Image src="/logo/nieuwsland-color.png" alt="Nieuwsland" width={200} height={45} className="h-10 w-auto" />
           </div>
 
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -129,7 +132,7 @@ export function Footer() {
           <div className="relative z-10 w-full max-w-2xl overflow-y-auto max-h-[90vh] rounded-2xl bg-white shadow-2xl">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-              <h2 className="text-lg font-bold text-slate-900">België deelt nieuws, tips en video&apos;s</h2>
+              <h2 className="text-xl font-black text-slate-900">België deelt nieuws, tips en video&apos;s</h2>
               <button
                 type="button"
                 onClick={() => setTipOpen(false)}
@@ -142,8 +145,11 @@ export function Footer() {
             </div>
 
             <form className="px-6 py-6 space-y-5">
-              <p className="text-sm text-slate-600">
-                Deel jouw verhaal met de redactie van Nieuwsland. Hebben we nog een vraag over het hoofd gezien bij een artikel? Laat het ons hier weten (vergeet niet te vermelden over welk artikel het gaat).
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Heb jij een tip, een nieuwswaardig feit of een video die je wenst te delen met de rest van de wereld? Bezorg het hier aan onze redactie! Laat het hier weten en help Nieuwsland mee het nieuws te brengen.
+              </p>
+              <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+                Opmerking bij een artikel? Deel je reactie en vermeld duidelijk over welk artikel het gaat, dan kijken we het meteen na.
               </p>
 
               {/* Textarea */}

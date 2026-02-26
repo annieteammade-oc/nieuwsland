@@ -240,64 +240,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
       </div>
 
-      {/* Nieuwsbrief balk */}
-      <section className="bg-[#1E3A8A] text-white">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <div className="flex items-center gap-4">
-            <Image src="/logo/favicon.png" alt="Nieuwsland" width={48} height={48} />
-            <div>
-              <p className="text-xl font-bold">Meld je aan voor de nieuwsbrief</p>
-              <p className="text-sm text-blue-200">
-                Het belangrijkste nieuws elke dag in je mailbox.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <form className="flex gap-2">
-              <input
-                type="email"
-                placeholder="Jouw e-mailadres"
-                className="rounded-full border border-blue-300/60 bg-white/10 px-4 py-2.5 text-sm text-white outline-none placeholder:text-blue-200 focus:border-orange-300"
-              />
-              <button
-                type="submit"
-                className="rounded-full bg-[#F97316] px-5 py-2.5 text-sm font-bold text-white hover:bg-orange-400 transition-colors"
-              >
-                Aanmelden
-              </button>
-            </form>
-            <div className="hidden items-center gap-2 lg:flex">
-              {["X", "Facebook", "Instagram"].map((name) => (
-                <Link
-                  key={name}
-                  href="#"
-                  className="text-xs font-semibold text-blue-200 hover:text-white transition-colors"
-                >
-                  {name}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Tip de redactie */}
-      <section className="bg-slate-50">
-        <div className="mx-auto flex max-w-7xl items-start gap-5 px-4 py-10 sm:px-6 lg:px-8">
-          <span className="text-6xl leading-none text-[#F97316] font-serif">&ldquo;</span>
-          <div>
-            <p className="text-lg font-semibold text-slate-800">
-              Wij zijn altijd op zoek naar het laatste nieuws.
-            </p>
-            <Link
-              href="#"
-              className="mt-1 inline-block text-[#F97316] font-bold hover:underline"
-            >
-              Tip de redactie &raquo;
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* Nieuwsbrief + Tip staan in de Footer component */}
     </>
   );
 }

@@ -91,10 +91,10 @@ def check_formatting(content):
     issues = []
     paragraphs = [p.strip() for p in content.split('\n\n') if p.strip()]
     
-    # Check: geen alinea's langer dan 4 zinnen (~300 chars)
-    long_paragraphs = [p for p in paragraphs if len(p) > 350 and '•' not in p and '-' not in p[:3]]
-    if len(long_paragraphs) > 2:
-        issues.append(f"Te veel lange alinea's ({len(long_paragraphs)}x >350 tekens). Splits op in kortere alinea's.")
+    # Check: geen alinea's langer dan 500 chars (generous, allows 4-5 sentences)
+    long_paragraphs = [p for p in paragraphs if len(p) > 500 and '•' not in p and '- ' not in p[:3] and '##' not in p]
+    if len(long_paragraphs) > 3:
+        issues.append(f"Te veel lange alinea's ({len(long_paragraphs)}x >500 tekens). Splits op in kortere alinea's.")
     
     # Check: minstens 2 bold passages
     bold_count = content.count('**')

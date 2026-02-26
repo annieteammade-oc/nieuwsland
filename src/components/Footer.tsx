@@ -7,19 +7,43 @@ import { useState } from "react";
 const columns = [
   {
     title: "Algemeen",
-    items: ["Privacybeleid", "Cookiebeleid", "Gebruiksvoorwaarden", "Vacatures", "Adverteren", "Partners"],
+    items: [
+      { label: "Privacybeleid", href: "/privacybeleid" },
+      { label: "Cookiebeleid", href: "/cookiebeleid" },
+      { label: "Gebruiksvoorwaarden", href: "/gebruiksvoorwaarden" },
+      { label: "Vacatures", href: "/vacatures" },
+      { label: "Adverteren", href: "/adverteren" },
+      { label: "Partners", href: "/partners" },
+      { label: "Onze redactie", href: "/redactie" },
+    ],
   },
   {
     title: "Service",
-    items: ["Contact", "FAQ", "Klantenservice"],
+    items: [
+      { label: "Contact", href: "/contact" },
+      { label: "FAQ", href: "/faq" },
+      { label: "Klantenservice", href: "/klantenservice" },
+    ],
   },
   {
     title: "Meer Nieuwsland",
-    items: ["Nieuwsbrieven", "Mobiele app", "RSS", "Pers"],
+    items: [
+      { label: "Nieuwsbrieven", href: "/nieuwsbrieven" },
+      { label: "Mobiele app", href: "/mobiele-app" },
+      { label: "RSS", href: "/rss" },
+      { label: "Pers", href: "/pers" },
+    ],
   },
   {
     title: "Lokaal Nieuws",
-    items: ["Antwerpen", "Gent", "Brussel", "Brugge", "Leuven"],
+    items: [
+      { label: "Antwerpen", href: "/regio/antwerpen" },
+      { label: "Gent", href: "/regio/gent" },
+      { label: "Brussel", href: "/regio/brussel" },
+      { label: "Brugge", href: "/regio/brugge" },
+      { label: "Leuven", href: "/regio/leuven" },
+      { label: "Oudenaarde", href: "/regio/oudenaarde" },
+    ],
   },
 ];
 
@@ -97,9 +121,9 @@ export function Footer() {
                 </h3>
                 <ul className="space-y-2">
                   {column.items.map((item) => (
-                    <li key={item}>
-                      <Link href="#" className="text-sm text-slate-600 hover:text-[#1E3A8A] hover:underline">
-                        {item}
+                    <li key={item.label}>
+                      <Link href={item.href} className="text-sm text-slate-600 hover:text-[#1E3A8A] hover:underline">
+                        {item.label}
                       </Link>
                     </li>
                   ))}

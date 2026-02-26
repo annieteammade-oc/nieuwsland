@@ -86,6 +86,35 @@ def check_content_is_article(content):
     return True, None
 
 
+def check_formatting(content):
+    """Artikel moet scanbaar zijn: subtitels, bullets, bold, korte alinea's"""
+    issues = []
+    paragraphs = [p.strip() for p in content.split('\n\n') if p.strip()]
+    
+    # Check: geen alinea's langer dan 4 zinnen (~300 chars)
+    long_paragraphs = [p for p in paragraphs if len(p) > 350 and '•' not in p and '-' not in p[:3]]
+    if len(long_paragraphs) > 2:
+        issues.append(f"Te veel lange alinea's ({len(long_paragraphs)}x >350 tekens). Splits op in kortere alinea's.")
+    
+    # Check: minstens 2 bold passages
+    bold_count = content.count('**')
+    if bold_count < 4:  # 4 = 2 bold passages (opening + closing)
+        issues.append(f"Te weinig **vette tekst** ({bold_count//2}x). Gebruik minstens 3-5 bold passages voor scanbaarheid.")
+    
+    # Check: minstens 1 subtitel (## of ###) bij artikelen > 300 woorden
+    word_count = len(content.split())
+    has_subtitles = '##' in content or '###' in content
+    if word_count > 300 and not has_subtitles:
+        issues.append("Geen subtitels gevonden bij een lang artikel. Voeg minstens 2-3 tussenkoppen (##) toe.")
+    
+    # Check: bij artikelen > 400 woorden, minstens 1 bullet lijst
+    has_bullets = '• ' in content or '- ' in content or '* ' in content
+    if word_count > 400 and not has_bullets:
+        issues.append("Geen bullet lists gevonden. Voeg minstens 1 opsomming toe voor scanbaarheid.")
+    
+    return len(issues) == 0, issues
+
+
 def check_not_duplicate_content(content):
     """Voorkom dat dezelfde tekst twee keer in het artikel staat"""
     paragraphs = [p.strip() for p in content.split('\n\n') if p.strip() and len(p.strip()) > 50]
@@ -188,6 +217,7 @@ def run_quality_gate(title, content):
         check_no_raw_markdown_artifacts(cleaned_title),
         check_content_is_article(cleaned_content),
         check_not_duplicate_content(cleaned_content),
+        check_formatting(cleaned_content),
     ]
     
     for passed, issue in checks:

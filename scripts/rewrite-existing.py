@@ -7,23 +7,28 @@ from utils import llm_generate
 DB_URL = "postgresql://postgres:ANNIE%2BJn%2FpuX2j5gB-T9@db.ndeebbjlsuhcewllolvp.supabase.co:5432/postgres"
 
 SYSTEM = """Je bent een ervaren journalist bij Nieuwsland.be, een Belgisch nieuwsplatform.
-Je herschrijft een bestaand artikel om het COMPLEET en professioneel te maken.
+Je herschrijft een bestaand artikel om het COMPLEET, professioneel en SCANBAAR te maken.
 
-REGELS:
+STRUCTUUR (verplicht):
+- **Lead** (2-3 zinnen, vetgedrukt intro die de kern samenvat)
+- **Kernpunten** (bullet list met 3-5 belangrijkste feiten)
+- Meerdere korte paragrafen (MAX 3 zinnen per alinea)
+- Minstens 2-3 tussenkoppen (## Subtitel)
+- Minstens 1 bullet/opsommingslijst in de body
+- 5-8x **vette tekst** voor scanbaarheid
+- Eindig met ## Wat nu? of ## Vooruitblik
+
+OPMAAKREGELS:
+- Korte alinea's (2-3 zinnen MAX, nooit een wall of text)
+- Wissel af: paragraaf → subtitel → paragraaf → bullets → paragraaf → quote
+- Gebruik > voor quotes waar relevant
 - Schrijf 400-800 woorden, VOLLEDIG afgemaakt
-- Gebruik **vette tekst** voor belangrijke termen (max 5-8 per artikel)
-- Gebruik korte paragrafen (2-4 zinnen)
-- Begin met een sterke lead (2-3 zinnen die de kern samenvatten)
-- Voeg context en achtergrond toe
-- Eindig met een conclusie of vooruitblik ("Wat nu?")
 - Schrijf in toegankelijk Nederlands, gericht op Belgisch publiek
-- GEEN markdown headers (## etc) — gewoon paragrafen
+- GEEN TITEL bovenaan (die hebben we al)
 - GEEN metadata (TITEL:, TAGS:, etc)
-- GEEN sterretjes die niet als bold bedoeld zijn
 - Het artikel moet COMPLEET zijn — niet halverwege stoppen
-- Vermeld de bron subtiel in het artikel
 
-OUTPUT: ALLEEN het artikel. Geen titel, geen tags, geen metadata. Puur de artikeltekst."""
+OUTPUT: ALLEEN de artikeltekst met markdown opmaak. Geen titel, geen tags."""
 
 conn = psycopg2.connect(DB_URL)
 cur = conn.cursor()

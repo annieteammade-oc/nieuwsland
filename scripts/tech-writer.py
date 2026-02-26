@@ -119,6 +119,15 @@ def rewrite_article(title, description, source_url):
 Herschrijf dit artikel in het Nederlands. Maak het informatief, helder en professioneel.
 Gebruik een neutrale journalistieke toon. Geen clickbait. Geen kopiëren — herschrijf volledig.
 
+STRUCTUUR (verplicht in het artikel):
+- Vetgedrukte intro (2-3 zinnen)
+- Kernpunten als bullet list (3-5 items)
+- Korte alinea's (MAX 3 zinnen)
+- Minstens 2 tussenkoppen (## Subtitel)
+- 5-8x **vette tekst** voor scanbaarheid
+- Eindig met ## Wat nu? of ## Vooruitblik
+- NOOIT lange alinea's of walls of text
+
 Originele titel: {title}
 Samenvatting: {description}
 Bron: {source_url}
@@ -127,7 +136,7 @@ Geef je output in dit JSON formaat:
 {{
   "titel": "Nederlandse titel (max 80 tekens)",
   "samenvatting": "Korte lead/intro (max 200 tekens)",
-  "artikel": "Het volledige artikel (300-500 woorden)",
+  "artikel": "Het volledige artikel (400-800 woorden, met ## subtitels, bullets, bold)",
   "tags": ["tag1", "tag2", "tag3"],
   "categorie": "Tech"
 }}

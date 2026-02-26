@@ -529,9 +529,35 @@ def supabase_get_author_id(category_slug):
 
 def supabase_publish(title, content, category_slug, excerpt=None, image_url=None,
                      source_name=None, source_url=None, status="published",
-                     is_featured=False, is_breaking=False, region=None):
-    """Publish an article to Supabase. Returns the created article or None."""
+                     is_featured=False, is_breaking=False, region=None,
+                     skip_quality_gate=False):
+    """Publish an article to Supabase. Runs quality gate first. Returns the created article or None."""
     import re as _re
+    
+    # Run quality gate BEFORE publishing
+    if not skip_quality_gate:
+        try:
+            from quality_gate import run_quality_gate
+            qg = run_quality_gate(title, content)
+            if not qg["pass"]:
+                print(f"❌ QUALITY GATE BLOCKED: {title}")
+                for issue in qg["issues"]:
+                    print(f"   - {issue}")
+                # Post rejection to Discord #logs
+                try:
+                    discord_send("logs", 
+                        f"🚫 **Quality Gate BLOCKED**: {title}\n"
+                        f"Issues: {', '.join(qg['issues'])}")
+                except:
+                    pass
+                return None
+            # Use cleaned content
+            title = qg["cleaned_title"]
+            content = qg["cleaned_content"]
+            print(f"✅ Quality gate passed: {title}")
+        except ImportError:
+            print("⚠️ quality_gate.py not found, publishing without checks")
+    
     # Generate slug from title
     slug = title.lower().strip()
     slug = _re.sub(r'[^a-z0-9\s-]', '', slug)

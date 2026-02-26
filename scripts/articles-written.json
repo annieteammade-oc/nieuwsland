@@ -94,5 +94,37 @@
     "discord_msg_id": "1476527136721604608",
     "written_at": "2026-02-26 11:31",
     "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 134,
+      "found_at": "2026-02-26 6:00",
+      "category": "economy",
+      "source": "De Tijd",
+      "title": "70.000 Vlamingen riskeren boete voor thuislaadpaal",
+      "link": "https://www.tijd.be/r/t/1/id/10650018",
+      "score": 5,
+      "reden": "Directe impact op Belgische burgers, financiële gevolgen."
+    },
+    "article": "TITEL: 70.000 Vlamingen riskeren boete voor thuislaadpaal: Nieuwe regels zorgen voor kopzorgen\nSUBTITEL: Eigenaren van elektrische wagens met een slimme laadpaal thuis moeten actie ondernemen om een GAS-boete te vermijden. De netbeheerder wil grip op het stroomnet houden, maar de communicatie rammelt.\nTAGS: elektrische wagen, laadpaal, Fluvius, boete, slimme meter, energie, Vlaanderen\n\nAFBEELDING: Een close-up van een elektrische auto die thuis aan een laadpaal hangt, met op de achtergrond een t...",
+    "discord_msg_id": "1476587340196479068",
+    "written_at": "2026-02-26 15:30",
+    "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 146,
+      "found_at": "2026-02-26 6:03",
+      "category": "belgium",
+      "source": "VRT NWS",
+      "title": "Wendy kreeg pas na 2 jaar diagnose en dat kostte bijna haar leven: nieuw plan moet diagnoses zeldzame ziekten versnellen",
+      "link": "https://vrtnws.be/p.jGJEww8kQ",
+      "score": 5,
+      "reden": "Belgisch gezondheidsnieuws, raakt veel mensen."
+    },
+    "article": "TITEL: Nieuw plan moet lijdensweg patiënten met zeldzame ziekten verkorten: \"Wendy kreeg pas na twee jaar de juiste diagnose\"\nSUBTITEL: België zet in op snellere opsporing en betere coördinatie van zorg voor zeldzame aandoeningen.\nTAGS: zeldzame ziekten, gezondheidszorg, Frank Vandenbroucke, diagnose, België\nAFBEELDING: Een close-up van een persoon's handen die een medisch document met grafieken en tekst vasthouden, met op de achtergrond een licht wazige medische setting of een arts die overlegt...",
+    "discord_msg_id": "1476587414154641551",
+    "written_at": "2026-02-26 15:31",
+    "status": "REVIEW"
   }
 ]

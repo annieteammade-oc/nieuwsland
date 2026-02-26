@@ -1,6 +1,7 @@
 ﻿import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { marked } from "marked";
 import { notFound } from "next/navigation";
 import { CategoryBadge } from "@/components/CategoryBadge";
 import { LiveBadge } from "@/components/LiveBadge";
@@ -107,15 +108,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
             {article.excerpt ? <p className="mt-5 text-lg leading-8 text-slate-700">{article.excerpt}</p> : null}
 
-            <div className="mt-8 space-y-5 text-base leading-8 text-slate-800">
-              {(article.content ?? "").split("\n").map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
-              ))}
-            </div>
+            <div
+              className="prose prose-lg mt-8 max-w-none text-slate-800"
+              dangerouslySetInnerHTML={{ __html: marked(article.content ?? "") as string }}
+            />
 
             {article.author ? (
               <p className="mt-8 border-t border-slate-200 pt-4 text-sm text-slate-600">
-                Door <span className="font-semibold text-slate-800">{article.author.name}</span>
+                Door <Link href={`/auteur/${article.author.slug}`} className="font-semibold text-slate-800 hover:text-[#1E3A8A] hover:underline">{article.author.name}</Link>
               </p>
             ) : null}
           </div>

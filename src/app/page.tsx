@@ -140,7 +140,9 @@ export default async function HomePage() {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[2fr_1fr] entrance-fade">
-        <div className="space-y-4">
+        {/* Linkerkolom 2/3: Hero + 4 items + Nieuws van Vandaag */}
+        <div className="space-y-6">
+          {/* a) Hero nieuwsitem */}
           <article className="relative overflow-hidden rounded-3xl bg-slate-900 text-white shadow-xl">
             <Link href={`/artikel/${hero.slug}`} className="relative block min-h-[420px]">
               {hero.image_url ? (
@@ -160,7 +162,7 @@ export default async function HomePage() {
             </Link>
           </article>
 
-          {/* 2x2 nieuwsitems direct onder hero — geen gap meer */}
+          {/* b) 4 kleine nieuwsitems (2x2) */}
           <div className="grid grid-cols-2 gap-4">
             {(data.heroSide.length >= 4 ? data.heroSide.slice(0, 4) : data.latest.slice(0, 4)).map((item) => (
               <Link
@@ -179,9 +181,37 @@ export default async function HomePage() {
               </Link>
             ))}
           </div>
+
+          {/* c) Nieuws van Vandaag — in de linkerkolom */}
+          <div>
+            <SectionTitle title="Nieuws van Vandaag" subtitle="Laatste updates" />
+            <ArticleGrid
+              articles={[...data.latest.slice(0, 9)].sort(
+                (a, b) => new Date(a.published_at).getTime() - new Date(b.published_at).getTime()
+              )}
+              columns={2}
+            />
+          </div>
         </div>
 
-        <Sidebar latest={data.latest} bestRead={data.bestRead} />
+        {/* Rechterkolom 1/3: Sidebar + Cartoon van de Dag */}
+        <aside className="space-y-6">
+          <Sidebar latest={data.latest} bestRead={data.bestRead} />
+
+          {/* Cartoon van de Dag */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 className="mb-4 text-lg font-black uppercase tracking-tight text-slate-900">Cartoon van de Dag</h3>
+            <div className="flex aspect-square items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+              <span className="text-6xl">🎨</span>
+            </div>
+            <Link
+              href="#"
+              className="mt-4 block rounded-full bg-[#F97316] px-4 py-2.5 text-center text-sm font-bold text-white transition-all hover:bg-orange-600"
+            >
+              Meer cartoons
+            </Link>
+          </div>
+        </aside>
       </section>
 
       {/* Breaking news auto-scroll ticker */}
@@ -201,35 +231,6 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-
-      <section className="mt-10">
-        <SectionTitle title="Nieuws van Vandaag" subtitle="Laatste updates" />
-        <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
-          <ArticleGrid
-            articles={[...data.latest.slice(0, 9)].sort(
-              (a, b) => new Date(a.published_at).getTime() - new Date(b.published_at).getTime()
-            )}
-            columns={2}
-          />
-          <aside className="space-y-6">
-            {/* Cartoon van de Dag */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h3 className="mb-4 text-lg font-black uppercase tracking-tight text-slate-900">Cartoon van de Dag</h3>
-              <div className="flex aspect-square items-center justify-center rounded-xl bg-slate-100 text-slate-400">
-                <span className="text-6xl">🎨</span>
-              </div>
-              <Link
-                href="#"
-                className="mt-4 block rounded-full bg-[#F97316] px-4 py-2.5 text-center text-sm font-bold text-white transition-all hover:bg-orange-600"
-              >
-                Meer cartoons
-              </Link>
-            </div>
-            {/* Sectie Nieuws van vandaag sidebar items */}
-            <Sidebar latest={data.latest.slice(3, 10)} bestRead={data.bestRead} />
-          </aside>
-        </div>
-      </section>
 
       <section className="mt-10">
         <div className="mb-5 flex items-end justify-between gap-3 border-b pb-3 border-slate-200">

@@ -162,9 +162,22 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 __html: (() => {
                   let body = article.content ?? "";
                   if (article.excerpt) {
-                    // Strip excerpt from beginning of content (may be bold/paragraph wrapped)
+                    // Strip excerpt (or truncated excerpt) from beginning of content
+                    // 1. Try exact match first (bold-wrapped or plain)
                     const esc = article.excerpt.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-                    body = body.replace(new RegExp(`^\\s*\\**${esc}\\**\\s*`, "i"), "");
+                    const exactRe = new RegExp(`^\\s*\\**${esc}\\**[.…]*\\s*`, "i");
+                    if (exactRe.test(body)) {
+                      body = body.replace(exactRe, "");
+                    } else {
+                      // 2. Excerpt may be truncated ("...") — match on first 80 chars
+                      const clean = article.excerpt.replace(/[.…]+$/, "").trim();
+                      if (clean.length > 40) {
+                        const prefix = clean.substring(0, 80).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                        // Match from start: optional bold markers, then the prefix, then rest of that paragraph
+                        const fuzzyRe = new RegExp(`^\\s*\\**${prefix}[^\\n]*\\n*`, "i");
+                        body = body.replace(fuzzyRe, "");
+                      }
+                    }
                   }
                   return marked(body) as string;
                 })(),

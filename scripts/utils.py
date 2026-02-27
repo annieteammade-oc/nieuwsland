@@ -197,10 +197,44 @@ def discord_add_reaction(channel_id, message_id, emoji):
 
 
 # ============================================================
-# OPENROUTER API
+# LLM API (Google Gemini direct, OpenRouter fallback)
 # ============================================================
 
-def llm_generate(prompt, model="google/gemini-2.5-flash", system=None, max_tokens=4000, temperature=0.7):
+def _get_google_api_key():
+    if "google_api_key" not in _creds_cache:
+        config_path = os.path.join(os.path.expanduser("~"), ".openclaw", "openclaw.json")
+        with open(config_path) as f:
+            config = json.load(f)
+        _creds_cache["google_api_key"] = config["models"]["providers"]["google"]["apiKey"]
+    return _creds_cache["google_api_key"]
+
+def _llm_google(prompt, system=None, max_tokens=4000, temperature=0.7):
+    """Generate text via Google Gemini API directly"""
+    api_key = _get_google_api_key()
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+    
+    parts = []
+    if system:
+        parts.append({"text": f"System: {system}\n\n{prompt}"})
+    else:
+        parts.append({"text": prompt})
+    
+    data = {
+        "contents": [{"parts": parts}],
+        "generationConfig": {
+            "maxOutputTokens": max_tokens,
+            "temperature": temperature,
+        }
+    }
+    
+    body = json.dumps(data).encode()
+    req = urllib.request.Request(url, data=body, method="POST",
+                                headers={"Content-Type": "application/json"})
+    resp = urllib.request.urlopen(req, context=ctx, timeout=120)
+    result = json.loads(resp.read())
+    return result["candidates"][0]["content"]["parts"][0]["text"]
+
+def _llm_openrouter(prompt, model="google/gemini-2.5-flash", system=None, max_tokens=4000, temperature=0.7):
     """Generate text via OpenRouter"""
     messages = []
     if system:
@@ -227,12 +261,23 @@ def llm_generate(prompt, model="google/gemini-2.5-flash", system=None, max_token
         }
     )
     
+    resp = urllib.request.urlopen(req, context=ctx, timeout=120)
+    result = json.loads(resp.read())
+    return result["choices"][0]["message"]["content"]
+
+def llm_generate(prompt, model="google/gemini-2.5-flash", system=None, max_tokens=4000, temperature=0.7):
+    """Generate text - tries Google Gemini direct first, falls back to OpenRouter"""
+    # Try Google Gemini direct first (faster, no OpenRouter dependency)
     try:
-        resp = urllib.request.urlopen(req, context=ctx, timeout=120)
-        result = json.loads(resp.read())
-        return result["choices"][0]["message"]["content"]
+        return _llm_google(prompt, system=system, max_tokens=max_tokens, temperature=temperature)
     except Exception as e:
-        print(f"LLM error: {e}")
+        print(f"Google Gemini direct failed: {e}, trying OpenRouter...")
+    
+    # Fallback to OpenRouter
+    try:
+        return _llm_openrouter(prompt, model=model, system=system, max_tokens=max_tokens, temperature=temperature)
+    except Exception as e:
+        print(f"OpenRouter also failed: {e}")
         return None
 
 

@@ -7,6 +7,15 @@ type ArticleRow = Omit<Article, "category" | "author"> & {
   author: Article["author"];
 };
 
+function shuffleArray<T>(arr: T[]): T[] {
+  const shuffled = [...arr];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 function fallbackSortByDate(items: Article[]) {
   return [...items].sort(
     (a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime(),
@@ -84,15 +93,19 @@ export async function getHomepageData() {
   const regional = articles.filter(
     (item) => item.category?.slug === "regionaal" || Boolean(item.region),
   );
-  const bestRead = [...articles].sort((a, b) => b.views - a.views).slice(0, 10);
+  const bestRead = shuffleArray([...articles].sort((a, b) => b.views - a.views).slice(0, 20)).slice(0, 10);
+
+  // Shuffle latest pool for variety in "Net Binnen" and trending
+  const latestPool = articles.slice(0, 24);
+  const shuffledLatest = shuffleArray(latestPool).slice(0, 12);
 
   return {
     hero: featured[0] ?? articles[0] ?? null,
     heroSide: featured.slice(1, 3),
     featuredGrid: featured.slice(3, 9),
-    latest: articles.slice(0, 12),
-    mixedPrimary: articles.slice(6, 11),
-    mixedSecondary: articles.slice(11, 16),
+    latest: shuffledLatest,
+    mixedPrimary: shuffleArray(articles.slice(6, 16)).slice(0, 5),
+    mixedSecondary: shuffleArray(articles.slice(11, 21)).slice(0, 5),
     videos: videos.slice(0, 8),
     regional: regional.slice(0, 8),
     breaking,

@@ -136,7 +136,7 @@ export default async function HomePage() {
                   <CategoryBadge category={hero.category} />
                   {hero.is_breaking ? <LiveBadge /> : null}
                 </div>
-                <h1 className="max-w-3xl text-3xl font-black uppercase leading-tight tracking-[-0.03em] sm:text-5xl">
+                <h1 className="max-w-3xl text-2xl font-black uppercase leading-tight tracking-[-0.03em] sm:text-3xl">
                   {hero.title}
                 </h1>
                 <p className="mt-3 max-w-2xl text-sm text-slate-200 sm:text-base">{hero.excerpt}</p>
@@ -154,15 +154,57 @@ export default async function HomePage() {
         <Sidebar latest={data.latest} bestRead={data.bestRead} />
       </section>
 
-      {/* Trending ticker na hero */}
-      <section className="mt-6 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-        <div className="flex items-center gap-4 overflow-x-auto">
+      {/* Gap filler: 2-kolom 2-rij nieuwsberichten */}
+      <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {data.latest.slice(0, 4).map((item) => (
+          <Link
+            key={item.id}
+            href={`/artikel/${item.slug}`}
+            className="group flex gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-300 hover:scale-[1.02]"
+          >
+            <div className="relative h-24 w-32 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
+              {item.image_url ? <Image src={item.image_url} alt={item.title} fill className="object-cover" sizes="150px" /> : null}
+            </div>
+            <div className="min-w-0 flex-1">
+              <CategoryBadge category={item.category} />
+              <p className="mt-1 text-sm font-black uppercase leading-tight tracking-tight text-slate-900 line-clamp-2">{item.title}</p>
+              <p className="mt-1 text-xs text-slate-500">{formatTimeAgo(item.published_at)}</p>
+            </div>
+          </Link>
+        ))}
+      </section>
+
+      {/* Breaking news auto-scroll ticker */}
+      {data.breaking.length > 0 && (
+        <section className="mt-6 overflow-hidden rounded-2xl bg-red-600 px-5 py-3 shadow-sm">
+          <div className="flex items-center gap-4">
+            <span className="flex-shrink-0 rounded-full bg-white px-3 py-1 text-xs font-bold uppercase text-red-600">Breaking</span>
+            <div className="relative flex-1 overflow-hidden">
+              <div className="animate-marquee flex whitespace-nowrap gap-8">
+                {[...data.breaking, ...data.breaking].map((item, i) => (
+                  <Link key={`${item.id}-${i}`} href={`/artikel/${item.slug}`} className="inline-block text-sm font-semibold text-white hover:text-red-200 whitespace-nowrap">
+                    ● {item.title}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Trending ticker */}
+      <section className="mt-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+        <div className="flex items-center gap-4 overflow-hidden">
           <span className="flex-shrink-0 rounded-full bg-red-600 px-3 py-1 text-xs font-bold uppercase text-white">Trending</span>
-          {data.latest.slice(0, 5).map((item, i) => (
-            <Link key={item.id} href={`/artikel/${item.slug}`} className="flex-shrink-0 text-sm font-semibold text-slate-700 hover:text-[#F97316] whitespace-nowrap">
-              <span className="mr-2 text-orange-500">{i + 1}.</span>{item.title.length > 50 ? item.title.slice(0, 50) + "…" : item.title}
-            </Link>
-          ))}
+          <div className="relative flex-1 overflow-hidden">
+            <div className="animate-marquee-slow flex whitespace-nowrap gap-8">
+              {[...data.latest.slice(0, 5), ...data.latest.slice(0, 5)].map((item, i) => (
+                <Link key={`${item.id}-${i}`} href={`/artikel/${item.slug}`} className="inline-block text-sm font-semibold text-slate-700 hover:text-[#F97316] whitespace-nowrap">
+                  <span className="mr-2 text-orange-500">{(i % 5) + 1}.</span>{item.title.length > 50 ? item.title.slice(0, 50) + "…" : item.title}
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 

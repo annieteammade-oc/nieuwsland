@@ -222,5 +222,69 @@
     "discord_msg_id": "1476889410313261169",
     "written_at": "2026-02-27 11:31",
     "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 167,
+      "found_at": "2026-02-26 6:18",
+      "category": "belgium",
+      "source": "VRT NWS",
+      "title": "Angèle stelt nieuwste single voor op het Muntplein in Brussel",
+      "link": "https://vrtnws.be/p.mRxQDNdxk",
+      "score": 5,
+      "reden": "Belgische artiest, lokaal evenement, brede aantrekkingskracht."
+    },
+    "article": "TITEL: Angèle Verrast Brussel: Nieuwe Single Gelanceerd op Muntplein\nSUBTITEL: De Belgische superster Angèle heeft fans en voorbijgangers verrast met een spontaan optreden en de lancering van haar nieuwste single.\nTAGS: Angèle, muziek, Brussel, Muntplein, verrassing, single, Belgische artiest\nAFBEELDING: [Afbeelding van Angèle die optreedt op het Muntplein, omringd door een verraste menigte]\n\n**Donderdagmiddag 16 mei** was het Muntplein in Brussel het toneel van een **onvergetelijke verrassing**...",
+    "discord_msg_id": "1476949762271084619",
+    "written_at": "2026-02-27 15:31",
+    "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 171,
+      "found_at": "2026-02-26 6:24",
+      "category": "belgium",
+      "source": "De Morgen",
+      "title": "‘Het had anders kunnen aflopen’: half miljoen Belgen lijden aan zeldzame ziekte",
+      "link": "https://www.demorgen.be/nieuws/het-had-anders-kunnen-aflopen-half-miljoen-belgen-lijden-aan-zeldzame-ziekte~b8d92bf0/",
+      "score": 5,
+      "reden": "Belgisch probleem, veel mensen getroffen, relevant voor gezondheidszorg."
+    },
+    "article": "TITEL: Half miljoen Belgen leven met zeldzame ziekte: \"Het had anders kunnen aflopen\"\nSUBTITEL: Diagnose vaak een lijdensweg voor patiënten en families\nTAGS: zeldzame ziekten, België, gezondheidszorg, patiëntenrechten, diagnostiek\nAFBEELDING: Een close-up van een hand die een andere hand vasthoudt, met op de achtergrond wazig ziekenhuispersoneel of een medische setting. De focus ligt op steun en menselijke connectie.\n\n**Meer dan 500.000 Belgen, zo'n 5% van de bevolking, leven met een zeldzame zi...",
+    "discord_msg_id": "1476949840570093569",
+    "written_at": "2026-02-27 15:31",
+    "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 174,
+      "found_at": "2026-02-26 6:27",
+      "category": "belgium",
+      "source": "VRT NWS",
+      "title": "Anderlecht belooft heraanleg van ‘straat met slechtste wegdek in Brussel’",
+      "link": "https://vrtnws.be/p.8e6B3nO3a",
+      "score": 5,
+      "reden": "Directe impact op Belgische burgers in Brussel."
+    },
+    "article": "TITEL: Einde aan de modderpoel: Van Souststraat in Anderlecht krijgt eindelijk volledige heraanleg\nSUBTITEL: Na jaren van verwaarlozing en administratieve strubbelingen wordt de beruchte 'straat met het slechtste wegdek van Brussel' aangepakt.\nTAGS: Anderlecht, Van Souststraat, wegdek, infrastructuur, Brussel, openbare werken\nAFBEELDING: Een foto van de Van Souststraat in Anderlecht, met diepe modderpoelen en gaten in het wegdek, eventueel met een bewoner die voorzichtig over de weg loopt. De sf...",
+    "discord_msg_id": "1476972574599675994",
+    "written_at": "2026-02-27 17:01",
+    "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 175,
+      "found_at": "2026-02-26 6:27",
+      "category": "belgium",
+      "source": "HLN",
+      "title": "Ambtenaren, bijna-gepensioneerden, militairen, treinpersoneel en vrouwen: Raad van State is kritisch voor pensioenhervorming. Hoe zit het voor u?",
+      "link": "https://www.hln.be/binnenland/ambtenaren-bijna-gepensioneerden-militairen-treinpersoneel-en-vrouwen-raad-van-state-is-kritisch-voor-pensioenhervorming-hoe-zit-het-voor-u~a3be7558/",
+      "score": 5,
+      "reden": "Grote impact op veel Belgische burgers en hun pensioen."
+    },
+    "article": "TITEL: Pensioenhervorming onder vuur: Raad van State uit scherpe kritiek\nSUBTITEL: Ambtenaren, militairen en vrouwen getroffen door plan Vandenbroucke, onzekerheid groeit\nTAGS: pensioenen, Raad van State, België, hervorming, ambtenaren, militairen, vrouwen\nAFBEELDING: Een close-up van een stapel officiële documenten met een pen erop, mogelijk met het logo van de Raad van State of een stempel. De sfeer is serieus en enigszins bureaucratisch.\n\n**De Belgische pensioenhervorming, voorgesteld door mi...",
+    "discord_msg_id": "1476972661560053771",
+    "written_at": "2026-02-27 17:02",
+    "status": "REVIEW"
   }
 ]

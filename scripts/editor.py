@@ -197,7 +197,7 @@ def handle_article(review):
     # Step 2: AI editorial check
     ai_check = ai_editorial_check(article_data["title"], article_data["body"])
     
-    if not ai_check.get("pass", True) and ai_check.get("score", 7) < 6:
+    if not ai_check.get("pass", True) and ai_check.get("score", 7) < 4:
         reason = ai_check.get("reason", "kwaliteit onvoldoende")
         discord_send("review-queue",
             f"🚫 **AUTO-REJECT** — {article_data['title']}\n"

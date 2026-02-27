@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Onze Redactie",
@@ -6,15 +7,15 @@ export const metadata: Metadata = {
 };
 
 const team = [
-  { name: "Lara Van den Bossche", role: "Binnenland & Regionaal", desc: "Snel, helder, menselijk. Wat betekent dit voor jouw gemeente?", color: "bg-blue-100 text-blue-700" },
-  { name: "Pieter De Smet", role: "Politiek & Duiding", desc: "Analytisch, context-first. Mini-tijdlijn + wat ligt er op tafel.", color: "bg-indigo-100 text-indigo-700" },
-  { name: "Noor El Kadi", role: "Economie & Werk", desc: "Concreet, cijfermatig. In cijfers blok + impact gezinnen/bedrijven.", color: "bg-emerald-100 text-emerald-700" },
-  { name: "Jonas Vercauteren", role: "Sport", desc: "Energiek. 3 sleutelmomenten + tactische duiding.", color: "bg-orange-100 text-orange-700" },
-  { name: "Elise Martens", role: "Tech & AI", desc: "Helder, begrippen uitgelegd. Wat is het echt? + België/Europa impact.", color: "bg-violet-100 text-violet-700" },
-  { name: "Dries Claes", role: "Wetenschap", desc: "Nauwkeurig, nuance. Sterkte van bewijs-schaal.", color: "bg-teal-100 text-teal-700" },
-  { name: "Camille Dupont", role: "Cultuur & Entertainment", desc: "Levendig, beschrijvend. Waarom dit nu scoort.", color: "bg-pink-100 text-pink-700" },
-  { name: "Tom Wouters", role: "Wereldnieuws", desc: "Bondig, update-gericht. Wat weten we zeker? vs Wat is nog onduidelijk?", color: "bg-sky-100 text-sky-700" },
-  { name: "Sofie Vermeulen", role: "Opinie & Columns", desc: "Scherp maar fair. These + tegenargument.", color: "bg-amber-100 text-amber-700" },
+  { name: "Lara Van den Bossche", slug: "lara-van-den-bossche", role: "Binnenland & Regionaal", desc: "Snel, helder, menselijk. Wat betekent dit voor jouw gemeente?", color: "bg-blue-100 text-blue-700" },
+  { name: "Pieter De Smet", slug: "pieter-de-smet", role: "Politiek & Duiding", desc: "Analytisch, context-first. Mini-tijdlijn + wat ligt er op tafel.", color: "bg-indigo-100 text-indigo-700" },
+  { name: "Noor El Kadi", slug: "noor-el-kadi", role: "Economie & Werk", desc: "Concreet, cijfermatig. In cijfers blok + impact gezinnen/bedrijven.", color: "bg-emerald-100 text-emerald-700" },
+  { name: "Jonas Vercauteren", slug: "jonas-vercauteren", role: "Sport", desc: "Energiek. 3 sleutelmomenten + tactische duiding.", color: "bg-orange-100 text-orange-700" },
+  { name: "Elise Martens", slug: "elise-martens", role: "Tech & AI", desc: "Helder, begrippen uitgelegd. Wat is het echt? + België/Europa impact.", color: "bg-violet-100 text-violet-700" },
+  { name: "Dries Claes", slug: "dries-claes", role: "Wetenschap", desc: "Nauwkeurig, nuance. Sterkte van bewijs-schaal.", color: "bg-teal-100 text-teal-700" },
+  { name: "Camille Dupont", slug: "camille-dupont", role: "Cultuur & Entertainment", desc: "Levendig, beschrijvend. Waarom dit nu scoort.", color: "bg-pink-100 text-pink-700" },
+  { name: "Tom Wouters", slug: "tom-wouters", role: "Wereldnieuws", desc: "Bondig, update-gericht. Wat weten we zeker? vs Wat is nog onduidelijk?", color: "bg-sky-100 text-sky-700" },
+  { name: "Sofie Vermeulen", slug: "sofie-vermeulen", role: "Opinie & Columns", desc: "Scherp maar fair. These + tegenargument.", color: "bg-amber-100 text-amber-700" },
 ];
 
 export default function RedactiePage() {
@@ -38,6 +39,9 @@ export default function RedactiePage() {
               {member.role}
             </span>
             <p className="mt-3 text-sm italic text-slate-500">&ldquo;{member.desc}&rdquo;</p>
+            <Link href={`/auteur/${member.slug}`} className="mt-4 inline-block text-sm font-semibold text-[#1E3A8A] hover:text-[#F97316] hover:underline">
+              Bekijk alle artikelen →
+            </Link>
           </div>
         ))}
       </div>

@@ -2,7 +2,37 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useCallback } from "react";
+
+function FooterNewsletter() {
+  const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    const email = new FormData(e.currentTarget).get("email");
+    try {
+      const res = await fetch("/api/newsletter", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) });
+      if (res.ok) setDone(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (done) {
+    return <p className="text-sm font-semibold text-orange-200">✅ Bedankt voor je inschrijving!</p>;
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex w-full max-w-xl flex-col gap-3 sm:flex-row">
+      <input name="email" type="email" required placeholder="Jouw e-mailadres" className="w-full rounded-full border border-blue-300/60 bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-blue-100 focus:border-orange-300" />
+      <button type="submit" disabled={loading} className="rounded-full bg-[#F97316] px-6 py-3 text-sm font-black uppercase tracking-wide text-white transition-all duration-300 hover:scale-105 hover:bg-orange-400 active:scale-95 disabled:opacity-50">
+        {loading ? "..." : "Aanmelden"}
+      </button>
+    </form>
+  );
+}
 
 const columns = [
   {
@@ -89,19 +119,7 @@ export function Footer() {
               </p>
             </div>
           </div>
-          <form className="flex w-full max-w-xl flex-col gap-3 sm:flex-row">
-            <input
-              type="email"
-              placeholder="Jouw e-mailadres"
-              className="w-full rounded-full border border-blue-300/60 bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-blue-100 focus:border-orange-300"
-            />
-            <button
-              type="submit"
-              className="rounded-full bg-[#F97316] px-6 py-3 text-sm font-black uppercase tracking-wide text-white transition-all duration-300 hover:scale-105 hover:bg-orange-400 active:scale-95"
-            >
-              Aanmelden
-            </button>
-          </form>
+          <FooterNewsletter />
         </div>
       </section>
 

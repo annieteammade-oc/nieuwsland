@@ -154,6 +154,18 @@ export default async function HomePage() {
         <Sidebar latest={data.latest} bestRead={data.bestRead} />
       </section>
 
+      {/* Trending ticker na hero */}
+      <section className="mt-6 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+        <div className="flex items-center gap-4 overflow-x-auto">
+          <span className="flex-shrink-0 rounded-full bg-red-600 px-3 py-1 text-xs font-bold uppercase text-white">Trending</span>
+          {data.latest.slice(0, 5).map((item, i) => (
+            <Link key={item.id} href={`/artikel/${item.slug}`} className="flex-shrink-0 text-sm font-semibold text-slate-700 hover:text-[#F97316] whitespace-nowrap">
+              <span className="mr-2 text-orange-500">{i + 1}.</span>{item.title.length > 50 ? item.title.slice(0, 50) + "…" : item.title}
+            </Link>
+          ))}
+        </div>
+      </section>
+
       <section className="mt-10">
         <SectionTitle title="Nieuws van Vandaag" subtitle="Laatste updates" />
         <ArticleGrid articles={data.latest.slice(0, 9)} columns={2} />

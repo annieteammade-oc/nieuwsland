@@ -4,6 +4,19 @@ import { useState } from "react";
 
 export default function NieuwsbrievenPage() {
   const [subscribed, setSubscribed] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubscribe(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    const email = new FormData(e.currentTarget).get("email");
+    try {
+      const res = await fetch("/api/newsletter", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) });
+      if (res.ok) setSubscribed(true);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
@@ -39,9 +52,9 @@ export default function NieuwsbrievenPage() {
           <>
             <h2 className="mb-3 text-xl font-bold">Schrijf u nu in</h2>
             <p className="mb-4 text-blue-100">Vul uw e-mailadres in en ontvang dagelijks het laatste nieuws.</p>
-            <form onSubmit={(e) => { e.preventDefault(); setSubscribed(true); }} className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row">
-              <input type="email" required placeholder="Uw e-mailadres" className="w-full rounded-full border border-blue-300/60 bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-blue-100 focus:border-orange-300" />
-              <button type="submit" className="rounded-full bg-[#F97316] px-6 py-3 text-sm font-bold uppercase tracking-wide text-white transition-all duration-300 hover:scale-105 hover:bg-orange-400">
+            <form onSubmit={handleSubscribe} className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row">
+              <input name="email" type="email" required placeholder="Uw e-mailadres" className="w-full rounded-full border border-blue-300/60 bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-blue-100 focus:border-orange-300" />
+              <button type="submit" disabled={loading} className="rounded-full bg-[#F97316] px-6 py-3 text-sm font-bold uppercase tracking-wide text-white transition-all duration-300 hover:scale-105 hover:bg-orange-400 disabled:opacity-50">
                 Aanmelden
               </button>
             </form>

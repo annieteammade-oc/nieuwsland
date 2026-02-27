@@ -4,6 +4,20 @@ import { useState } from "react";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    const form = e.currentTarget;
+    const data = Object.fromEntries(new FormData(form));
+    try {
+      const res = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      if (res.ok) setSubmitted(true);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
@@ -38,21 +52,21 @@ export default function ContactPage() {
               <p className="text-slate-600">Uw bericht is verzonden. Wij nemen zo snel mogelijk contact met u op.</p>
             </div>
           ) : (
-            <form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="text-sm font-semibold text-slate-700">Naam <span className="text-red-500">*</span></label>
-                <input type="text" required className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]" />
+                <input name="name" type="text" required className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]" />
               </div>
               <div>
                 <label className="text-sm font-semibold text-slate-700">E-mail <span className="text-red-500">*</span></label>
-                <input type="email" required className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]" />
+                <input name="email" type="email" required className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]" />
               </div>
               <div>
                 <label className="text-sm font-semibold text-slate-700">Bericht <span className="text-red-500">*</span></label>
-                <textarea rows={5} required className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]" />
+                <textarea name="message" rows={5} required className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]" />
               </div>
-              <button type="submit" className="w-full rounded-full bg-[#F97316] py-3 text-sm font-bold uppercase tracking-wide text-white transition-all duration-300 hover:bg-orange-400 active:scale-[0.98]">
-                Verstuur bericht
+              <button type="submit" disabled={loading} className="w-full rounded-full bg-[#F97316] py-3 text-sm font-bold uppercase tracking-wide text-white transition-all duration-300 hover:bg-orange-400 active:scale-[0.98] disabled:opacity-50">
+                {loading ? "Verzenden..." : "Verstuur bericht"}
               </button>
             </form>
           )}

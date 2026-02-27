@@ -126,7 +126,7 @@ export default async function HomePage() {
       {/* Trending ticker — bovenaan direct onder header */}
       <section className="mb-5 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
         <div className="flex items-center gap-4 overflow-hidden">
-          <span className="flex-shrink-0 rounded-full bg-[#F97316] px-3 py-1 text-xs font-bold uppercase text-white">Trending</span>
+          <span className="flex-shrink-0 rounded-full bg-red-600 px-3 py-1 text-xs font-bold uppercase text-white">Trending</span>
           <div className="relative flex-1 overflow-hidden">
             <div className="animate-marquee-slow flex whitespace-nowrap gap-8">
               {[...data.latest.slice(0, 5), ...data.latest.slice(0, 5)].map((item, i) => (
@@ -204,7 +204,31 @@ export default async function HomePage() {
 
       <section className="mt-10">
         <SectionTitle title="Nieuws van Vandaag" subtitle="Laatste updates" />
-        <ArticleGrid articles={data.latest.slice(0, 9)} columns={2} />
+        <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
+          <ArticleGrid
+            articles={[...data.latest.slice(0, 9)].sort(
+              (a, b) => new Date(a.published_at).getTime() - new Date(b.published_at).getTime()
+            )}
+            columns={2}
+          />
+          <aside className="space-y-6">
+            {/* Cartoon van de Dag */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h3 className="mb-4 text-lg font-black uppercase tracking-tight text-slate-900">Cartoon van de Dag</h3>
+              <div className="flex aspect-square items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+                <span className="text-6xl">🎨</span>
+              </div>
+              <Link
+                href="#"
+                className="mt-4 block rounded-full bg-[#F97316] px-4 py-2.5 text-center text-sm font-bold text-white transition-all hover:bg-orange-600"
+              >
+                Meer cartoons
+              </Link>
+            </div>
+            {/* Sectie Nieuws van vandaag sidebar items */}
+            <Sidebar latest={data.latest.slice(3, 10)} bestRead={data.bestRead} />
+          </aside>
+        </div>
       </section>
 
       <section className="mt-10">

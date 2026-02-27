@@ -11,11 +11,11 @@ export function CategoryBadge({ category }: CategoryBadgeProps) {
   }
 
   const stylesBySlug: Record<string, string> = {
-    belgie: "bg-red-600 text-white",
-    wereld: "bg-blue-700 text-white",
+    belgie: "bg-[#F97316] text-white",
+    wereld: "bg-[#1E3A8A] text-white",
     politiek: "bg-purple-700 text-white",
-    economie: "bg-green-700 text-white",
-    sport: "bg-orange-600 text-white",
+    economie: "bg-emerald-700 text-white",
+    sport: "bg-[#F97316] text-white",
     tech: "bg-cyan-700 text-white",
     cultuur: "bg-pink-600 text-white",
     wetenschap: "bg-teal-700 text-white",

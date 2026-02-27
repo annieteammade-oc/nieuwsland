@@ -122,7 +122,23 @@ export default async function HomePage() {
   );
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 pt-5 pb-6 sm:px-6 lg:px-8">
+      {/* Trending ticker — bovenaan direct onder header */}
+      <section className="mb-5 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+        <div className="flex items-center gap-4 overflow-hidden">
+          <span className="flex-shrink-0 rounded-full bg-[#F97316] px-3 py-1 text-xs font-bold uppercase text-white">Trending</span>
+          <div className="relative flex-1 overflow-hidden">
+            <div className="animate-marquee-slow flex whitespace-nowrap gap-8">
+              {[...data.latest.slice(0, 5), ...data.latest.slice(0, 5)].map((item, i) => (
+                <Link key={`${item.id}-${i}`} href={`/artikel/${item.slug}`} className="inline-block text-sm font-semibold text-slate-700 hover:text-[#F97316] whitespace-nowrap">
+                  <span className="mr-2 text-orange-500">{(i % 5) + 1}.</span>{item.title.length > 50 ? item.title.slice(0, 50) + "…" : item.title}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="grid gap-6 lg:grid-cols-[2fr_1fr] entrance-fade">
         <div className="space-y-4">
           <article className="relative overflow-hidden rounded-3xl bg-slate-900 text-white shadow-xl">
@@ -144,9 +160,23 @@ export default async function HomePage() {
             </Link>
           </article>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            {data.heroSide.map((item) => (
-              <HeroSideItem key={item.id} article={item} />
+          {/* 2x2 nieuwsitems direct onder hero — geen gap meer */}
+          <div className="grid grid-cols-2 gap-4">
+            {(data.heroSide.length >= 4 ? data.heroSide.slice(0, 4) : data.latest.slice(0, 4)).map((item) => (
+              <Link
+                key={item.id}
+                href={`/artikel/${item.slug}`}
+                className="group flex gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition-all duration-300 hover:scale-[1.02]"
+              >
+                <div className="relative h-20 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                  {item.image_url ? <Image src={item.image_url} alt={item.title} fill className="object-cover" sizes="120px" /> : null}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <CategoryBadge category={item.category} />
+                  <p className="mt-1 text-xs font-black uppercase leading-tight tracking-tight text-slate-900 line-clamp-2">{item.title}</p>
+                  <p className="mt-1 text-[11px] text-slate-500">{formatTimeAgo(item.published_at)}</p>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -154,35 +184,15 @@ export default async function HomePage() {
         <Sidebar latest={data.latest} bestRead={data.bestRead} />
       </section>
 
-      {/* Gap filler: 2-kolom 2-rij nieuwsberichten */}
-      <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {data.latest.slice(0, 4).map((item) => (
-          <Link
-            key={item.id}
-            href={`/artikel/${item.slug}`}
-            className="group flex gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-300 hover:scale-[1.02]"
-          >
-            <div className="relative h-24 w-32 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
-              {item.image_url ? <Image src={item.image_url} alt={item.title} fill className="object-cover" sizes="150px" /> : null}
-            </div>
-            <div className="min-w-0 flex-1">
-              <CategoryBadge category={item.category} />
-              <p className="mt-1 text-sm font-black uppercase leading-tight tracking-tight text-slate-900 line-clamp-2">{item.title}</p>
-              <p className="mt-1 text-xs text-slate-500">{formatTimeAgo(item.published_at)}</p>
-            </div>
-          </Link>
-        ))}
-      </section>
-
       {/* Breaking news auto-scroll ticker */}
       {data.breaking.length > 0 && (
-        <section className="mt-6 overflow-hidden rounded-2xl bg-red-600 px-5 py-3 shadow-sm">
+        <section className="mt-6 overflow-hidden rounded-2xl bg-[#F97316] px-5 py-3 shadow-sm">
           <div className="flex items-center gap-4">
-            <span className="flex-shrink-0 rounded-full bg-white px-3 py-1 text-xs font-bold uppercase text-red-600">Breaking</span>
+            <span className="flex-shrink-0 rounded-full bg-white px-3 py-1 text-xs font-bold uppercase text-[#F97316]">Breaking</span>
             <div className="relative flex-1 overflow-hidden">
               <div className="animate-marquee flex whitespace-nowrap gap-8">
                 {[...data.breaking, ...data.breaking].map((item, i) => (
-                  <Link key={`${item.id}-${i}`} href={`/artikel/${item.slug}`} className="inline-block text-sm font-semibold text-white hover:text-red-200 whitespace-nowrap">
+                  <Link key={`${item.id}-${i}`} href={`/artikel/${item.slug}`} className="inline-block text-sm font-semibold text-white hover:text-orange-200 whitespace-nowrap">
                     ● {item.title}
                   </Link>
                 ))}
@@ -191,22 +201,6 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-
-      {/* Trending ticker */}
-      <section className="mt-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-        <div className="flex items-center gap-4 overflow-hidden">
-          <span className="flex-shrink-0 rounded-full bg-red-600 px-3 py-1 text-xs font-bold uppercase text-white">Trending</span>
-          <div className="relative flex-1 overflow-hidden">
-            <div className="animate-marquee-slow flex whitespace-nowrap gap-8">
-              {[...data.latest.slice(0, 5), ...data.latest.slice(0, 5)].map((item, i) => (
-                <Link key={`${item.id}-${i}`} href={`/artikel/${item.slug}`} className="inline-block text-sm font-semibold text-slate-700 hover:text-[#F97316] whitespace-nowrap">
-                  <span className="mr-2 text-orange-500">{(i % 5) + 1}.</span>{item.title.length > 50 ? item.title.slice(0, 50) + "…" : item.title}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
       <section className="mt-10">
         <SectionTitle title="Nieuws van Vandaag" subtitle="Laatste updates" />

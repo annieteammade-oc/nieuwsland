@@ -113,18 +113,46 @@ function VideoModal({ video, onClose }: { video: Article | null; onClose: () => 
   );
 }
 
+// Hardcoded YouTube Shorts for the homepage
+const CURATED_SHORTS = [
+  { id: "QH_dtEQmYdI", title: "Loena Hendrickx schittert op haar korte kür!" },
+  { id: "KwHv4je8vGI", title: "Heb jij vrij genomen voor de zon?" },
+  { id: "oD5mhfXtN5g", title: "Jaarlijkse toespraak van Trump" },
+  { id: "QLUBi2QTh6o", title: "Trump, Zelensky, and Putin discuss Ukraine peace deal" },
+  { id: "iVdTq75p7wY", title: "Putin is losing in Ukraine" },
+  { id: "ayyR12dusqo", title: "No Davos invite... but Putin isn't mad" },
+];
+
+function shortToArticle(s: { id: string; title: string }): Article {
+  return {
+    id: `short-${s.id}`,
+    title: s.title,
+    slug: s.id,
+    excerpt: "",
+    content: "",
+    published_at: "",
+    youtube_url: `https://www.youtube.com/watch?v=${s.id}`,
+    image_url: `https://img.youtube.com/vi/${s.id}/hqdefault.jpg`,
+  } as Article;
+}
+
 export function VideoShorts({ videos }: { videos: Article[] }) {
   const [activeVideo, setActiveVideo] = useState<Article | null>(null);
+
+  // Use curated shorts if available, otherwise fall back to CMS videos
+  const shorts = CURATED_SHORTS.length > 0
+    ? CURATED_SHORTS.map(shortToArticle)
+    : videos;
 
   return (
     <>
       <div className="flex gap-4 overflow-x-auto pb-2">
-        {videos.map((video) => (
+        {shorts.map((video) => (
           <button
             key={video.id}
             type="button"
             onClick={() => setActiveVideo(video)}
-            className="group min-w-[190px] max-w-[190px] overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-sm transition-all duration-300 hover:scale-[1.02]"
+            className="group flex min-w-[190px] max-w-[190px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-sm transition-all duration-300 hover:scale-[1.02]"
           >
             <div className="relative aspect-[9/16] bg-slate-800">
               {getVideoThumbnail(video) ? (
@@ -136,7 +164,7 @@ export function VideoShorts({ videos }: { videos: Article[] }) {
                 </span>
               </div>
             </div>
-            <p className="p-3 text-sm font-black uppercase leading-tight tracking-tight text-slate-900">{video.title}</p>
+            <p className="line-clamp-2 p-3 text-sm font-black uppercase leading-tight tracking-tight text-slate-900">{video.title}</p>
           </button>
         ))}
       </div>

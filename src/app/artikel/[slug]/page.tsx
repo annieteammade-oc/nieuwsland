@@ -112,14 +112,15 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               {article.title}
             </h1>
 
-            {/* Intro/excerpt — bold */}
+            {/* Intro/excerpt — bold, rendered as markdown to handle **bold** etc. */}
             {article.excerpt ? (
-              <p
-                className="mt-4 text-slate-800"
+              <div
+                className="mt-4 text-slate-800 [&_p]:m-0 [&_strong]:font-extrabold"
                 style={{ fontSize: "20px", fontWeight: 700, lineHeight: "30px" }}
-              >
-                {article.excerpt}
-              </p>
+                dangerouslySetInnerHTML={{
+                  __html: (marked(article.excerpt.replace(/\.\.\.$|…$/, "")) as string),
+                }}
+              />
             ) : null}
 
             {/* Author */}
@@ -154,12 +155,37 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             {/* Divider */}
             <hr className="my-6 border-slate-200" />
 
-            {/* Body text */}
+            {/* Body text — strip first paragraph if it duplicates the excerpt */}
             <div
               className="prose max-w-none text-slate-800"
               style={{ fontSize: "18px", lineHeight: "27px" }}
               dangerouslySetInnerHTML={{
-                __html: marked(article.content ?? "") as string,
+                __html: (() => {
+                  let body = article.content ?? "";
+                  if (article.excerpt) {
+                    // Normalize excerpt: strip markdown bold markers and trailing ellipsis
+                    const excerptClean = article.excerpt
+                      .replace(/\*\*/g, "")
+                      .replace(/\.\.\.$|…$/, "")
+                      .trim();
+                    // Get the first paragraph of the body (before double newline)
+                    const firstParaMatch = body.match(/^(.+?)(\n\n|\r?\n\r?\n)/s);
+                    if (firstParaMatch) {
+                      const firstParaClean = firstParaMatch[1]
+                        .replace(/\*\*/g, "")
+                        .trim();
+                      // If the excerpt is contained in the first paragraph (or vice versa), strip it
+                      if (
+                        excerptClean.length > 30 &&
+                        (firstParaClean.startsWith(excerptClean.slice(0, 60)) ||
+                         excerptClean.startsWith(firstParaClean.slice(0, 60)))
+                      ) {
+                        body = body.slice(firstParaMatch[0].length);
+                      }
+                    }
+                  }
+                  return marked(body) as string;
+                })(),
               }}
             />
 

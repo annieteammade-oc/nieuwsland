@@ -146,9 +146,48 @@ Wees streng maar redelijk. Score 6+ = publiceren. Onder 6 = afwijzen."""
     # Fallback: publish anyway
     return {"pass": True, "score": 7, "issues": [], "reason": "AI response niet parseable — fallback approve"}
 
+VALID_CATEGORIES = ["belgie", "wereld", "politiek", "economie", "sport", "tech", "cultuur", "wetenschap", "opinie", "regionaal"]
+
+def reclassify_category(title, body, current_category):
+    """Use AI to assign the best category based on article content, not just source feed."""
+    cat_slug = CHANNEL_TO_WP_CAT.get(current_category, current_category)
+    
+    system = """Je bent de categoriseerder van Nieuwsland.be.
+Bepaal de BESTE categorie voor dit artikel op basis van de inhoud (niet de bron).
+
+CATEGORIEËN: belgie, wereld, politiek, economie, sport, tech, cultuur, wetenschap, opinie, regionaal
+
+REGELS:
+- "belgie" is ALLEEN voor algemeen Belgisch nieuws dat niet in een andere categorie past
+- Politieke artikelen over België → "politiek" (niet "belgie")
+- Economische artikelen over België → "economie" (niet "belgie")
+- Sport in België → "sport" (niet "belgie")
+- Artikelen over andere landen → "wereld"
+- Bij twijfel: kies de meest specifieke categorie
+
+ANTWOORD: alleen de categorie-slug, niets anders."""
+
+    prompt = f"Huidige categorie: {cat_slug}\nTitel: {title}\nArtikel (eerste 500 tekens): {body[:500]}"
+    
+    result = llm_generate(prompt, model="google/gemini-2.5-flash", system=system, max_tokens=30, temperature=0.1)
+    
+    if result:
+        new_cat = result.strip().lower().replace('"', '').replace("'", "")
+        if new_cat in VALID_CATEGORIES:
+            if new_cat != cat_slug:
+                print(f"  Recategorized: {cat_slug} → {new_cat} ({title[:50]})")
+            return new_cat
+    
+    return cat_slug
+
 def publish_article(article_data):
     """Publish approved article to Supabase"""
-    cat_slug = CHANNEL_TO_WP_CAT.get(article_data["category"], article_data["category"])
+    # Re-classify category based on content instead of blindly trusting source feed
+    cat_slug = reclassify_category(
+        article_data["title"],
+        article_data["body"],
+        article_data["category"]
+    )
     
     result = supabase_publish(
         title=article_data["title"],

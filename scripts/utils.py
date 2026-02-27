@@ -271,6 +271,17 @@ RSS_FEEDS = {
     "politics": [
         ("Politico EU", "https://www.politico.eu/feed/"),
     ],
+    "regional": [
+        ("Nieuwsblad Regio", "https://www.nieuwsblad.be/rss/"),
+        ("HLN Antwerpen", "https://www.hln.be/antwerpen/rss.xml"),
+        ("HLN Gent", "https://www.hln.be/gent/rss.xml"),
+        ("HLN Brussel", "https://www.hln.be/brussel/rss.xml"),
+        ("HLN Leuven", "https://www.hln.be/leuven/rss.xml"),
+        ("HLN Brugge", "https://www.hln.be/brugge/rss.xml"),
+        ("HLN Mechelen", "https://www.hln.be/mechelen/rss.xml"),
+        ("HLN Hasselt", "https://www.hln.be/hasselt/rss.xml"),
+        ("HLN Oudenaarde", "https://www.hln.be/oudenaarde/rss.xml"),
+    ],
 }
 
 YOUTUBE_SHORTS = [
@@ -484,22 +495,19 @@ def generate_article_image(title, category, excerpt=None):
         return None
     
     # Build a prompt for a photorealistic news header image
+    # Keep it simple — overly detailed prompts make DALL-E produce more artificial results
     prompt = (
-        f"Ultra-realistic editorial photograph for a premium Belgian news website. "
-        f"Category: {category}. Subject: {title[:100]}. "
-        f"Shot by a professional photojournalist with a Canon EOS R5, 35mm lens, f/2.8. "
-        f"Natural lighting, sharp focus, authentic colors. Looks like a real Reuters/AP press photo. "
-        f"Absolutely NO illustration, NO cartoon, NO digital art, NO AI-looking artifacts. "
-        f"No text, no logos, no watermarks. Wide format 16:9. "
-        f"The image must be indistinguishable from a real photograph."
+        f"Editorial press photograph: {title[:120]}. "
+        f"Photojournalism style, natural lighting, candid moment. "
+        f"No text, no logos, no watermarks."
     )
     
     data = {
-        "model": "dall-e-3",
+        "model": "gpt-image-1",
         "prompt": prompt,
         "n": 1,
-        "size": "1792x1024",
-        "quality": "standard",
+        "size": "1536x1024",
+        "quality": "medium",
     }
     
     body = json.dumps(data).encode()
@@ -514,8 +522,19 @@ def generate_article_image(title, category, excerpt=None):
     )
     
     try:
-        resp = urllib.request.urlopen(req, context=ctx, timeout=60)
+        resp = urllib.request.urlopen(req, context=ctx, timeout=90)
         result = json.loads(resp.read())
+        # gpt-image-1 returns base64, convert to a data URI for downstream upload
+        b64_data = result["data"][0].get("b64_json")
+        if b64_data:
+            # Save to temp file and return as file path for upload_image_to_supabase
+            import tempfile, base64
+            tmp = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+            tmp.write(base64.b64decode(b64_data))
+            tmp.close()
+            print(f"🖼️ Image generated (gpt-image-1) for: {title[:50]}...")
+            return f"file://{tmp.name}"
+        # Fallback: URL-based response
         image_url = result["data"][0]["url"]
         print(f"🖼️ Image generated for: {title[:50]}...")
         return image_url
@@ -529,11 +548,22 @@ def upload_image_to_supabase(image_url, filename):
     sb = get_supabase_creds()
     
     try:
-        # Download image
-        req = urllib.request.Request(image_url, headers={"User-Agent": "Nieuwsland/1.0"})
-        resp = urllib.request.urlopen(req, context=ctx, timeout=30)
-        image_data = resp.read()
-        content_type = resp.headers.get("Content-Type", "image/png")
+        # Download/read image
+        if image_url.startswith("file://"):
+            local_path = image_url[7:]  # strip file://
+            with open(local_path, "rb") as f:
+                image_data = f.read()
+            content_type = "image/png"
+            import os as _os
+            try:
+                _os.unlink(local_path)
+            except OSError:
+                pass
+        else:
+            req = urllib.request.Request(image_url, headers={"User-Agent": "Nieuwsland/1.0"})
+            resp = urllib.request.urlopen(req, context=ctx, timeout=30)
+            image_data = resp.read()
+            content_type = resp.headers.get("Content-Type", "image/png")
         
         # Upload to Supabase Storage (bucket: article-images)
         upload_url = f"{sb['url']}/storage/v1/object/article-images/{filename}"

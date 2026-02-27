@@ -1,8 +1,8 @@
 """
-Nieuwsland.be — Editor Agent (Hoofdredacteur)
-Monitort #review-queue voor Dennis' reacties (✅/❌).
-Bij ✅ → publiceert naar Supabase (live op nieuwsland.be).
-Bij ❌ → leest feedback, laat herschrijven.
+Nieuwsland.be — Editor Agent (Autonome Hoofdredacteur)
+Monitort #review-queue voor nieuwe artikelen.
+Doet een AI quality check en publiceert automatisch naar Supabase.
+Geen handmatige goedkeuring nodig — volledig autonoom.
 Draait via cron elke 15 minuten.
 """
 
@@ -13,6 +13,7 @@ from utils import (
     llm_generate, supabase_publish, now_str, sheets_read, sheets_update,
     BOT_ID, CHANNELS
 )
+from quality_gate import run_quality_gate
 
 SHEET_ID_FILE = os.path.join(os.path.dirname(__file__), "sheet-id.json")
 PROCESSED_REVIEWS_FILE = os.path.join(os.path.dirname(__file__), "processed-reviews.json")
@@ -25,30 +26,6 @@ CHANNEL_TO_WP_CAT = {
     "culture": "cultuur", "science": "wetenschap", "opinion": "opinie",
     "regional": "regionaal",
 }
-
-def get_wp_category_id(channel_or_category):
-    """Get WordPress category ID from channel name or category slug"""
-    if os.path.exists(WP_TAXONOMY_FILE):
-        with open(WP_TAXONOMY_FILE) as f:
-            data = json.load(f)
-        cats = data.get("categories", {})
-        slug = CHANNEL_TO_WP_CAT.get(channel_or_category, channel_or_category)
-        return cats.get(slug)
-    return None
-
-def get_wp_tag_ids(tag_names):
-    """Get WordPress tag IDs from tag names"""
-    if not os.path.exists(WP_TAXONOMY_FILE):
-        return []
-    with open(WP_TAXONOMY_FILE) as f:
-        data = json.load(f)
-    tags = data.get("tags", {})
-    ids = []
-    for name in tag_names:
-        slug = name.lower().strip().replace(" ", "-").replace("ë", "e").replace("ï", "i")
-        if slug in tags:
-            ids.append(tags[slug])
-    return ids
 
 def get_sheet_id():
     if os.path.exists(SHEET_ID_FILE):
@@ -66,253 +43,122 @@ def save_processed(processed):
     with open(PROCESSED_REVIEWS_FILE, "w") as f:
         json.dump(processed, f)
 
-def get_review_messages():
-    """Get messages from #review-queue that have reactions OR text replies with ✅/❌"""
+def get_pending_reviews():
+    """Get bot messages from #review-queue that haven't been processed yet"""
     messages = discord_get_messages("review-queue", limit=30)
     if not messages:
         return []
     
-    reviewed = []
     processed = load_processed()
-    
-    # Build a map of bot review messages
-    bot_reviews = {}
-    human_replies = []
+    pending = []
     
     for msg in messages:
         if msg["author"]["id"] == BOT_ID and "REVIEW NODIG" in msg.get("content", ""):
-            bot_reviews[msg["id"]] = msg
-        elif msg["author"]["id"] != BOT_ID:
-            human_replies.append(msg)
+            if msg["id"] not in processed:
+                pending.append({
+                    "message_id": msg["id"],
+                    "content": msg["content"],
+                    "attachments": msg.get("attachments", []),
+                })
     
-    for msg_id, msg in bot_reviews.items():
-        if msg_id in processed:
-            continue
-        
-        approved = False
-        rejected = False
-        feedback_text = ""
-        
-        # Method 1: Check emoji reactions on the message
-        reactions = msg.get("reactions", [])
-        for r in reactions:
-            emoji = r["emoji"]["name"]
-            if r["count"] > 0:
-                if emoji in ["✅", "👍", "white_check_mark"]:
-                    approved = True
-                elif emoji in ["❌", "👎", "x"]:
-                    rejected = True
-        
-        # Method 2: Check text replies that reference this message
-        for reply in human_replies:
-            ref = reply.get("message_reference", {})
-            if ref.get("message_id") == msg_id:
-                content = reply["content"]
-                if "✅" in content or "👍" in content:
-                    approved = True
-                if "❌" in content or "👎" in content:
-                    rejected = True
-                feedback_text += content + "\n"
-        
-        # Method 3: Check text messages right after bot message that contain ✅/❌
-        # (Dennis might just type without replying)
-        msg_timestamp = msg["timestamp"]
-        for reply in human_replies:
-            if reply.get("message_reference"):
-                continue  # Already handled above
-            reply_content = reply["content"]
-            if "❌" in reply_content or "✅" in reply_content:
-                # Check if this is close in time to the review
-                if reply["timestamp"] > msg_timestamp:
-                    if "✅" in reply_content:
-                        approved = True
-                    if "❌" in reply_content:
-                        rejected = True
-                    feedback_text += reply_content + "\n"
-        
-        if approved or rejected:
-            reviewed.append({
-                "message_id": msg_id,
-                "content": msg["content"],
-                "approved": approved and not rejected,
-                "feedback": feedback_text.strip(),
-            })
-    
-    return reviewed
+    return pending
 
-def get_feedback_replies(message_id):
-    """Check for reply messages with feedback after a ❌"""
-    channel_id = CHANNELS["review-queue"]
-    messages = discord_get_messages("review-queue", limit=30)
-    if not messages:
-        return ""
-    
-    feedback = []
-    for msg in messages:
-        # Check if it's a reply to our review message
-        ref = msg.get("message_reference", {})
-        if ref.get("message_id") == message_id:
-            if msg["author"]["id"] != BOT_ID:  # Not from bot
-                feedback.append(msg["content"])
-        
-        # Also check messages right after the review that aren't from bot
-        # (Dennis might just type feedback without replying)
-    
-    return "\n".join(feedback)
+def download_attachment_text(attachments):
+    """Download the .txt attachment and return its content."""
+    for att in attachments:
+        if att.get("filename", "").endswith(".txt"):
+            try:
+                import urllib.request, ssl
+                ctx = ssl.create_default_context()
+                req = urllib.request.Request(att["url"], headers={"User-Agent": "Nieuwsland/1.0"})
+                resp = urllib.request.urlopen(req, context=ctx, timeout=15)
+                return resp.read().decode("utf-8", errors="replace")
+            except Exception as e:
+                print(f"Attachment download error: {e}")
+                return None
+    return None
 
 def extract_article_from_review(content):
     """Extract article text and metadata from review message"""
-    # Parse the review format
     title_match = re.search(r'TITEL:\s*(.+)', content)
     title = title_match.group(1).strip() if title_match else ""
     
-    # If no TITEL format, try to extract from the topic line
     if not title:
         topic_match = re.search(r'\*\*Topic:\*\*\s*(.+)', content)
         title = topic_match.group(1).strip() if topic_match else "Untitled"
     
-    # Extract category
     cat_match = re.search(r'—\s*(\w+)\s*artikel', content)
     category = cat_match.group(1).lower() if cat_match else "algemeen"
     
-    # Extract the actual article (after the metadata block)
+    tags_match = re.search(r'TAGS:\s*(.+)', content)
+    tags = [t.strip() for t in tags_match.group(1).split(",")] if tags_match else []
+    
+    source_match = re.search(r'Bron:\s*(.+)', content)
+    source = source_match.group(1).strip() if source_match else None
+    
+    # Extract body (after ---)
     parts = content.split("---")
-    if len(parts) >= 2:
-        article_body = parts[1].strip()
-    else:
-        # Just take everything after the metadata
-        article_body = content
+    body = parts[1].strip() if len(parts) >= 2 else content
     
     return {
         "title": title,
         "category": category,
-        "body": article_body,
+        "tags": tags,
+        "source": source,
+        "body": body,
         "full_content": content,
     }
 
-def publish_to_wp(article_data):
-    """Publish approved article to WordPress"""
-    # Convert Discord markdown to HTML
-    html = article_data["body"]
-    html = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', html)
-    html = re.sub(r'\*(.+?)\*', r'<em>\1</em>', html)
-    html = re.sub(r'^• (.+)$', r'<li>\1</li>', html, flags=re.MULTILINE)
-    html = re.sub(r'(<li>.*</li>)', r'<ul>\1</ul>', html, flags=re.DOTALL)
-    # Paragraphs
-    paragraphs = html.split("\n\n")
-    html = "\n".join([f"<p>{p.strip()}</p>" if not p.strip().startswith("<") else p for p in paragraphs if p.strip()])
+def ai_editorial_check(title, article_text):
+    """AI-powered editorial quality check — returns pass/fail + reasoning"""
+    system = """Je bent de hoofdredacteur van Nieuwsland.be. Je beoordeelt artikelen voor publicatie.
+
+CHECK OP:
+1. Is het artikel in correct Nederlands geschreven?
+2. Is het informatief en feitelijk? (geen hallucinaties, geen vage claims)
+3. Is de structuur goed? (lead, tussenkopjes, bullets, conclusie)
+4. Is de titel pakkend maar niet clickbait?
+5. Is het artikel compleet (niet halverwege afgebroken)?
+6. Geen metadata-lekkage (TITEL:, TAGS:, REVIEW NODIG, etc. in de body)?
+
+ANTWOORD IN JSON:
+{"pass": true/false, "score": 1-10, "issues": ["issue1", "issue2"], "reason": "korte samenvatting"}
+
+Wees streng maar redelijk. Score 6+ = publiceren. Onder 6 = afwijzen."""
+
+    prompt = f"TITEL: {title}\n\nARTIKEL:\n{article_text[:3000]}"
     
-    result = wp_publish(
-        title=article_data["title"],
-        content=html,
-        status="draft",  # Start as draft, Dennis can publish from WP
-    )
+    result = llm_generate(prompt, model="google/gemini-2.5-flash", system=system, max_tokens=500, temperature=0.3)
     
-    return result
-
-def rewrite_article(article_data, feedback):
-    """Rewrite rejected article based on feedback"""
-    system = """Je bent een ervaren journalist bij Nieuwsland.be.
-Je herschrijft een afgekeurd artikel op basis van feedback van de hoofdredacteur.
-
-REGELS:
-- Verwerk ALLE feedback punten
-- Behoud de kern van het verhaal
-- Schrijf COMPLEET (400-800 woorden)
-- Gebruik **vette tekst**, *cursief*, bullets
-- Eindig het artikel VOLLEDIG (nooit halverwege stoppen)
-
-OUTPUT: het volledige herschreven artikel, klaar voor publicatie."""
-
-    prompt = f"""ORIGINEEL ARTIKEL:
-{article_data['full_content'][:2000]}
-
-FEEDBACK VAN REDACTEUR:
-{feedback}
-
-Herschrijf het artikel en verwerk alle feedback."""
-
-    return llm_generate(prompt, model="google/gemini-2.5-flash", system=system, max_tokens=3000)
-
-def handle_approval(review):
-    """Handle an approved article — publish to Supabase"""
-    article_data = extract_article_from_review(review["content"])
+    if not result:
+        # Fallback: publish anyway (don't block pipeline)
+        return {"pass": True, "score": 7, "issues": [], "reason": "AI check niet beschikbaar — fallback approve"}
     
-    # Map channel category to Supabase category slug
+    try:
+        # Extract JSON from response
+        json_match = re.search(r'\{[^}]+\}', result, re.DOTALL)
+        if json_match:
+            parsed = json.loads(json_match.group())
+            return parsed
+    except (json.JSONDecodeError, AttributeError):
+        pass
+    
+    # Fallback: publish anyway
+    return {"pass": True, "score": 7, "issues": [], "reason": "AI response niet parseable — fallback approve"}
+
+def publish_article(article_data):
+    """Publish approved article to Supabase"""
     cat_slug = CHANNEL_TO_WP_CAT.get(article_data["category"], article_data["category"])
     
-    # Extract tags from review content
-    tags_match = re.search(r'TAGS:\s*(.+)', review["content"])
-    tag_names = [t.strip() for t in tags_match.group(1).split(",")] if tags_match else []
-    
-    # Extract source info
-    source_match = re.search(r'Bron:\s*(.+)', review["content"])
-    source_name = source_match.group(1).strip() if source_match else None
-    
-    # Publish to Supabase
     result = supabase_publish(
         title=article_data["title"],
         content=article_data["body"],
         category_slug=cat_slug,
-        source_name=source_name,
+        source_name=article_data.get("source"),
         status="published",
     )
     
-    if result and result.get("id"):
-        article_url = f"https://nieuwsland.be/artikel/{result['slug']}"
-        cat_name = cat_slug.upper()
-        tags_str = ", ".join(tag_names) if tag_names else "geen"
-        discord_send("review-queue", 
-            f"✅ **GEPUBLICEERD** — {article_data['title']}\n"
-            f"Supabase ID: {result['id']}\n"
-            f"Categorie: {cat_name} | Tags: {tags_str}\n"
-            f"Status: live op nieuwsland.be\n"
-            f"URL: {article_url}")
-        
-        log("Editor", f"✅ Artikel gepubliceerd: {article_data['title']} (#{result['id']})")
-        
-        # Update Sheet status
-        update_sheet_article_status(article_data["title"], "GEPUBLICEERD", article_url)
-    else:
-        discord_send("review-queue",
-            f"⚠️ Publicatie mislukt voor: {article_data['title']}\n"
-            f"Supabase API error — check #logs")
-        log("Editor", f"❌ Publicatie mislukt: {article_data['title']}")
-
-def handle_rejection(review):
-    """Handle a rejected article — get feedback and rewrite"""
-    article_data = extract_article_from_review(review["content"])
-    feedback = get_feedback_replies(review["message_id"])
-    
-    if not feedback:
-        # Check if feedback is in the same message as a reply
-        discord_send("review-queue",
-            f"❌ Artikel afgekeurd: **{article_data['title']}**\n"
-            f"Geen feedback gevonden — geef feedback als reply op het review-bericht, "
-            f"dan herschrijf ik het artikel.")
-        log("Editor", f"❌ Afgekeurd zonder feedback: {article_data['title']}")
-        return
-    
-    log("Editor", f"🔄 Herschrijven: {article_data['title']} (feedback: {feedback[:100]}...)")
-    
-    # Rewrite
-    new_article = rewrite_article(article_data, feedback)
-    
-    if new_article:
-        # Post rewritten version — metadata as message, full article as file
-        review_header = (
-            f"📋 **HERSCHREVEN — REVIEW NODIG** — {article_data['category'].upper()}\n\n"
-            f"**Topic:** {article_data['title']}\n"
-            f"**Verwerkte feedback:** {feedback[:200]}\n\n"
-            f"---\n"
-            f"✅ = Goedkeuren & publiceren\n"
-            f"❌ = Nogmaals afwijzen (geef feedback als reply)"
-        )
-        
-        discord_send("review-queue", review_header, file_content=new_article, filename=f"herschreven-{article_data['category']}.txt")
-        log("Editor", f"🔄 Herschreven artikel gepost: {article_data['title']}")
-    else:
-        discord_send("review-queue", f"⚠️ Herschrijven mislukt voor: {article_data['title']}")
+    return result
 
 def update_sheet_article_status(title, status, url=""):
     """Update article status in Sheet by matching title"""
@@ -326,32 +172,95 @@ def update_sheet_article_status(title, status, url=""):
             sheets_update(sheet_id, f"Topics!H{i+1}:J{i+1}", [[status, "", url]])
             break
 
+def handle_article(review):
+    """Process a single article: quality check + auto-publish"""
+    article_data = extract_article_from_review(review["content"])
+    
+    # Download actual article body from .txt attachment
+    attachment_text = download_attachment_text(review.get("attachments", []))
+    if attachment_text and len(attachment_text) > 100:
+        article_data["body"] = attachment_text
+    
+    # Step 1: Run code-based quality gate
+    qg_result = run_quality_gate(article_data["title"], article_data["body"])
+    
+    if not qg_result["pass"]:
+        issues = ", ".join(qg_result["issues"])
+        discord_send("review-queue",
+            f"🚫 **AUTO-REJECT** — {article_data['title']}\n"
+            f"Quality gate gefaald: {issues}\n"
+            f"Artikel wordt NIET gepubliceerd.")
+        log("Editor", f"🚫 Auto-reject: {article_data['title']} — {issues}")
+        update_sheet_article_status(article_data["title"], "AFGEKEURD")
+        return False
+    
+    # Step 2: AI editorial check
+    ai_check = ai_editorial_check(article_data["title"], article_data["body"])
+    
+    if not ai_check.get("pass", True) and ai_check.get("score", 7) < 6:
+        reason = ai_check.get("reason", "kwaliteit onvoldoende")
+        discord_send("review-queue",
+            f"🚫 **AUTO-REJECT** — {article_data['title']}\n"
+            f"Score: {ai_check.get('score', '?')}/10 — {reason}\n"
+            f"Issues: {', '.join(ai_check.get('issues', []))}")
+        log("Editor", f"🚫 AI reject: {article_data['title']} — score {ai_check.get('score')}")
+        update_sheet_article_status(article_data["title"], "AFGEKEURD")
+        return False
+    
+    # Step 3: Publish!
+    result = publish_article(article_data)
+    
+    if result and result.get("id"):
+        article_url = f"https://nieuwsland.be/artikel/{result['slug']}"
+        cat_name = article_data["category"].upper()
+        tags_str = ", ".join(article_data.get("tags", [])) or "geen"
+        score = ai_check.get("score", "?")
+        
+        discord_send("review-queue",
+            f"✅ **AUTO-GEPUBLICEERD** — {article_data['title']}\n"
+            f"AI Score: {score}/10 | Categorie: {cat_name} | Tags: {tags_str}\n"
+            f"URL: {article_url}")
+        
+        log("Editor", f"✅ Auto-gepubliceerd: {article_data['title']} (score {score}/10, #{result['id']})")
+        update_sheet_article_status(article_data["title"], "GEPUBLICEERD", article_url)
+        return True
+    else:
+        discord_send("review-queue",
+            f"⚠️ Publicatie mislukt voor: {article_data['title']}\n"
+            f"Supabase API error — check #logs")
+        log("Editor", f"❌ Publicatie mislukt: {article_data['title']}")
+        return False
+
 def run():
-    """Main editor run"""
-    print(f"[{now_str()}] Editor agent gestart")
+    """Main editor run — auto-process all pending reviews"""
+    print(f"[{now_str()}] Editor agent gestart (AUTONOOM)")
     
-    reviews = get_review_messages()
+    pending = get_pending_reviews()
     
-    if not reviews:
-        print("Geen nieuwe reviews gevonden")
+    if not pending:
+        print("Geen nieuwe artikelen in review-queue")
         return
     
     processed = load_processed()
+    published = 0
+    rejected = 0
     
-    for review in reviews:
-        if review["approved"]:
-            print(f"✅ Goedgekeurd: {review['message_id']}")
-            handle_approval(review)
+    for review in pending:
+        success = handle_article(review)
+        if success:
+            published += 1
         else:
-            print(f"❌ Afgekeurd: {review['message_id']}")
-            handle_rejection(review)
+            rejected += 1
         
-        # Mark as processed
         processed.append(review["message_id"])
         time.sleep(2)
     
     save_processed(processed)
-    print(f"Editor klaar: {len(reviews)} reviews verwerkt")
+    
+    total = published + rejected
+    print(f"Editor klaar: {published} gepubliceerd, {rejected} afgekeurd (van {total} artikelen)")
+    if published > 0:
+        log("Editor", f"📊 Batch klaar: {published} gepubliceerd, {rejected} afgekeurd")
 
 if __name__ == "__main__":
     run()

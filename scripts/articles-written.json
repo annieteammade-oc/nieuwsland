@@ -158,5 +158,69 @@
     "discord_msg_id": "1476647817140240416",
     "written_at": "2026-02-26 19:31",
     "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 150,
+      "found_at": "2026-02-26 6:03",
+      "category": "belgium",
+      "source": "HLN",
+      "title": "Inspecteur (25) snuift cocaïne in politiekantoor van Molenbeek: “Collega hoorde hem iets te enthousiast bezig op het toilet”",
+      "link": "https://www.hln.be/binnenland/inspecteur-25-snuift-cocaine-in-politiekantoor-van-molenbeek-collega-hoorde-hem-iets-te-enthousiast-bezig-op-het-toilet~a643ea7f/",
+      "score": 5,
+      "reden": "Lokaal nieuws, schandaal, hoge impact in België."
+    },
+    "article": "TITEL: Agent (25) betrapt op cocaïnegebruik in politiekantoor Molenbeek\nSUBTITEL: Incident werpt schaduw op korps, intern onderzoek gestart naar jonge inspecteur\nTAGS: politie, Molenbeek, drugs, cocaïne, intern onderzoek, integriteit\nAFBEELDING: Een close-up van een politiebadge met op de achtergrond een wazige afbeelding van een politiekantoor. De badge is licht gekanteld om een gevoel van onevenwicht of verstoring te suggereren.\n\n**Een 25-jarige politie-inspecteur van de zone Brussel-West (Mol...",
+    "discord_msg_id": "1476828904999227413",
+    "written_at": "2026-02-27 07:30",
+    "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 151,
+      "found_at": "2026-02-26 6:03",
+      "category": "belgium",
+      "source": "HLN",
+      "title": "Natalia scherp na commotie over aanpak winkeldiefstal van zoontje (4), die ze opzocht op Google: “De persoon die perfect kan opvoeden, mag me bellen”",
+      "link": "https://www.hln.be/showbizz/natalia-scherp-na-commotie-over-aanpak-winkeldiefstal-van-zoontje-4-die-ze-opzocht-op-google-de-persoon-die-perfect-kan-opvoeden-mag-me-bellen~a13b6e0c/",
+      "score": 5,
+      "reden": "Bekende Vlaming, maatschappelijk debat, veel discussie."
+    },
+    "article": "TITEL: Natalia reageert fel op kritiek na winkeldiefstal zoontje: \"Wie perfect opvoedt, mag me bellen\"\nSUBTITEL: Zangeres verdedigt haar aanpak van vierjarige zoon na incident in winkel\nTAGS: Natalia, opvoeding, winkeldiefstal, controverse, showbizz\n\nAFBEELDING: Natalia met een lichte glimlach, kalm maar zelfverzekerd kijkend, met op de achtergrond een vaag silhouet van een kind of een winkelgang.\n\n**De populaire zangeres Natalia Druyts heeft fel gereageerd op de commotie rond de aanpak van de w...",
+    "discord_msg_id": "1476828980135858323",
+    "written_at": "2026-02-27 07:31",
+    "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 152,
+      "found_at": "2026-02-26 6:03",
+      "category": "belgium",
+      "source": "HLN",
+      "title": "Isolde Van den Eynde: “Sinds wanneer zijn boter en suiker levensnoodzakelijk? De btw-chaos die niemand durft aan te pakken”",
+      "link": "https://www.hln.be/binnenland/isolde-van-den-eynde-sinds-wanneer-zijn-boter-en-suiker-levensnoodzakelijk-de-btw-chaos-die-niemand-durft-aan-te-pakken~a6facd37/",
+      "score": 5,
+      "reden": "Belgische politiek, btw-chaos, raakt elke burger."
+    },
+    "article": "TITEL: Btw-chaos in België: Is boter levensnoodzakelijk, maar een fietshelm niet?\nSUBTITEL: Isolde Van den Eynde hekelt de absurde btw-tarieven en de politieke stilstand.\nTAGS: btw, politiek, economie, België, Isolde Van den Eynde\n\nAFBEELDING: Een chaotische collage van alledaagse producten (boter, suiker, fietshelm, tandpasta, brood) met verschillende btw-percentages erbij, tegen een achtergrond van Belgische politieke gebouwen.\n\n**De Belgische btw-tarieven zijn een kluwen van absurde regels di...",
+    "discord_msg_id": "1476889335386210508",
+    "written_at": "2026-02-27 11:30",
+    "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 153,
+      "found_at": "2026-02-26 6:03",
+      "category": "belgium",
+      "source": "HLN",
+      "title": "Raad van State is kritisch voor pensioenhervorming van de regering. Wat zeggen ze over úw pensioen?",
+      "link": "https://www.hln.be/binnenland/raad-van-state-is-kritisch-voor-pensioenhervorming-van-de-regering-wat-zeggen-ze-over-uw-pensioen~a3be7558/",
+      "score": 5,
+      "reden": "Belgische politiek, pensioenen, direct relevant voor iedereen."
+    },
+    "article": "TITEL: Raad van State kraakt pensioenhervorming: onzekerheid over uw pensioen groeit\nSUBTITEL: De hoogste adviesraad uit scherpe kritiek op de plannen van de regering De Croo, met mogelijke gevolgen voor de pensioenleeftijd en -bedragen.\nTAGS: pensioenhervorming, Raad van State, regering De Croo, pensioen, België\n\nAFBEELDING: Een close-up van een stapel officiële documenten met de tekst \"Raad van State\" zichtbaar, liggend op een bureau met een rekenmachine en een pen ernaast, symboliserend kriti...",
+    "discord_msg_id": "1476889410313261169",
+    "written_at": "2026-02-27 11:31",
+    "status": "REVIEW"
   }
 ]

@@ -11,6 +11,7 @@ from utils import (
     discord_send, log, llm_generate, sheets_read, sheets_update,
     now_str, hash_url
 )
+from quality_gate import run_quality_gate
 
 SHEET_ID_FILE = os.path.join(os.path.dirname(__file__), "sheet-id.json")
 ARTICLES_FILE = os.path.join(os.path.dirname(__file__), "articles-written.json")
@@ -159,7 +160,7 @@ URL: {topic['link']}{source_context}"""
     result = llm_generate(prompt, model=model, system=system, max_tokens=3000, temperature=0.7)
     return result
 
-def post_to_discord(topic, article_text):
+def post_to_discord(topic, article_text, quality_issues=None):
     """Post article to category channel + review-queue with full article as file"""
     category = topic["category"]
     
@@ -180,6 +181,16 @@ def post_to_discord(topic, article_text):
     tags = tags_m.group(1).strip() if tags_m else ""
     afbeelding = afbeelding_m.group(1).strip() if afbeelding_m else ""
     
+    # Quality warning if issues remain
+    quality_warning = ""
+    if quality_issues:
+        issues_list = "\n".join(f"  • {issue}" for issue in quality_issues)
+        quality_warning = (
+            f"\n⚠️ **QUALITY GATE GEFAALD** (na 2 auto-rewrites):\n"
+            f"{issues_list}\n"
+            f"👉 Extra aandacht nodig bij review!\n"
+        )
+    
     # Review-queue: metadata as message, full article as .txt attachment
     review_header = (
         f"📋 REVIEW NODIG — {category.upper()} artikel\n"
@@ -189,7 +200,8 @@ def post_to_discord(topic, article_text):
         f"TITEL: {titel}\n"
         f"SUBTITEL: {subtitel}\n"
         f"TAGS: {tags}\n"
-        f"AFBEELDING: {afbeelding}\n\n"
+        f"AFBEELDING: {afbeelding}\n"
+        f"{quality_warning}\n"
         f"---\n"
         f"✅ = Goedkeuren & publiceren op Nieuwsland.be\n"
         f"❌ = Afwijzen (geef feedback als reply)"
@@ -233,8 +245,56 @@ def run(max_articles=2):
                 update_sheet_status(row_index, "MISLUKT")
             continue
         
-        # Post to Discord
-        result = post_to_discord(topic, article)
+        # Quality gate check with auto-rewrite loop (max 2 retries)
+        MAX_RETRIES = 2
+        titel_match = re.search(r'TITEL:\s*(.+)', article)
+        parsed_title = titel_match.group(1).strip() if titel_match else topic['title']
+        
+        qg_result = run_quality_gate(parsed_title, article)
+        retry_count = 0
+        
+        while not qg_result["pass"] and retry_count < MAX_RETRIES:
+            retry_count += 1
+            issues_text = "\n".join(f"- {issue}" for issue in qg_result["issues"])
+            print(f"Quality gate FAIL (poging {retry_count}/{MAX_RETRIES}): {qg_result['issues']}")
+            log("Writer", f"🔄 Quality gate gefaald voor **{topic['title']}** — auto-rewrite poging {retry_count}/{MAX_RETRIES}")
+            
+            model = CATEGORY_MODELS.get(topic["category"], "google/gemini-2.5-flash")
+            rewrite_prompt = f"""Je vorige versie van dit artikel had kwaliteitsproblemen. Herschrijf het artikel en los ALLE issues op.
+
+PROBLEMEN:
+{issues_text}
+
+VORIG ARTIKEL:
+{article}
+
+Schrijf een verbeterde versie. Zelfde OUTPUT FORMAT (TITEL/SUBTITEL/TAGS/AFBEELDING + artikel). Los alle bovenstaande problemen op."""
+
+            rewrite_system = """Je bent een ervaren journalist bij Nieuwsland.be. Je herschrijft een artikel om kwaliteitsproblemen op te lossen.
+Zorg voor: korte alinea's (max 3 zinnen), minstens 2-3 subtitels (##), minstens 1 bullet lijst, 5-8x **vette tekst**, een lead die de 5 W's beantwoordt.
+Schrijf 400-800 woorden. Eindig met ## Wat nu? of ## Vooruitblik."""
+
+            article = llm_generate(rewrite_prompt, model=model, system=rewrite_system, max_tokens=3000, temperature=0.7)
+            if not article:
+                print("Rewrite mislukt, gebruik vorige versie")
+                break
+            
+            titel_match = re.search(r'TITEL:\s*(.+)', article)
+            parsed_title = titel_match.group(1).strip() if titel_match else topic['title']
+            qg_result = run_quality_gate(parsed_title, article)
+        
+        quality_passed = qg_result["pass"]
+        remaining_issues = qg_result["issues"] if not quality_passed else []
+        
+        if quality_passed:
+            print(f"Quality gate PASS{' (na ' + str(retry_count) + ' rewrite(s))' if retry_count > 0 else ''}")
+            log("Writer", f"✅ Quality gate passed voor **{topic['title']}**{' na ' + str(retry_count) + ' rewrite(s)' if retry_count > 0 else ''}")
+        else:
+            print(f"Quality gate FAIL na {retry_count} retries — post met waarschuwing")
+            log("Writer", f"⚠️ Quality gate gefaald na {retry_count} retries voor **{topic['title']}** — issues: {', '.join(remaining_issues)}")
+        
+        # Post to Discord (with warning if quality gate failed)
+        result = post_to_discord(topic, article, quality_issues=remaining_issues)
         
         # Update Sheet
         if row_index:

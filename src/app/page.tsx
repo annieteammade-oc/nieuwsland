@@ -160,7 +160,10 @@ export default async function HomePage() {
       </section>
 
       <section className="mt-10">
-        <SectionTitle title="Bekijk Video's" subtitle="Korte updates" />
+        <div className="mb-5 flex items-end justify-between gap-3 border-b pb-3 border-slate-200">
+          <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900">Bekijk Video&apos;s</h2>
+          <Link href="/videos" className="text-sm font-semibold text-[#1E3A8A] hover:underline">Alle video&apos;s →</Link>
+        </div>
         <VideoShorts videos={data.videos} />
       </section>
 

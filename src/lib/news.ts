@@ -68,12 +68,19 @@ export async function getAllPublishedArticles(): Promise<Article[]> {
   }
 }
 
+function isVideoArticle(item: Article): boolean {
+  return Boolean(item.video_url || item.youtube_url);
+}
+
 export async function getHomepageData() {
-  const articles = await getAllPublishedArticles();
+  const allArticles = await getAllPublishedArticles();
+
+  // Separate videos from regular articles — videos should ONLY appear in video sections
+  const videos = allArticles.filter(isVideoArticle);
+  const articles = allArticles.filter((item) => !isVideoArticle(item));
 
   const featured = articles.filter((item) => item.is_featured);
   const breaking = articles.filter((item) => item.is_breaking).slice(0, 4);
-  const videos = articles.filter((item) => item.video_url || item.youtube_url);
   const regional = articles.filter(
     (item) => item.category?.slug === "regionaal" || Boolean(item.region),
   );
@@ -93,6 +100,11 @@ export async function getHomepageData() {
   };
 }
 
+export async function getAllVideos(): Promise<Article[]> {
+  const articles = await getAllPublishedArticles();
+  return articles.filter(isVideoArticle);
+}
+
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
   const categories = await getCategories();
   return categories.find((item) => item.slug === slug) ?? null;
@@ -100,7 +112,7 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 
 export async function getArticlesByCategory(slug: string): Promise<Article[]> {
   const articles = await getAllPublishedArticles();
-  return articles.filter((item) => item.category?.slug === slug);
+  return articles.filter((item) => item.category?.slug === slug && !isVideoArticle(item));
 }
 
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
@@ -125,6 +137,7 @@ export async function searchArticles(term: string): Promise<Article[]> {
 
   const articles = await getAllPublishedArticles();
   return articles.filter((item) => {
+    if (isVideoArticle(item)) return false;
     const haystack = `${item.title} ${item.excerpt ?? ""} ${item.content ?? ""}`.toLowerCase();
     return haystack.includes(query);
   });

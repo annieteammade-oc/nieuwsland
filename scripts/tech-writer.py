@@ -135,8 +135,8 @@ Bron: {source_url}
 Geef je output in dit JSON formaat:
 {{
   "titel": "Nederlandse titel (max 80 tekens)",
-  "samenvatting": "Korte lead/intro (max 200 tekens)",
-  "artikel": "Het volledige artikel (400-800 woorden, met ## subtitels, bullets, bold)",
+  "samenvatting": "2-3 zinnen samenvatting/teaser — deze tekst mag NIET in het artikel voorkomen! Dit is wat lezers zien voordat ze klikken.",
+  "artikel": "Het volledige artikel (400-800 woorden, met ## subtitels, bullets, bold). Start met een EIGEN inleidende alinea die NIET dezelfde tekst is als de samenvatting. Het artikel moet zelfstandig leesbaar zijn.",
   "tags": ["tag1", "tag2", "tag3"],
   "categorie": "Tech"
 }}

@@ -693,6 +693,19 @@ def supabase_get_author_id(category_slug):
         return result[0]["id"]
     return None
 
+def _extract_first_sentences(text, n=2):
+    """Extract the first n sentences from text as a clean excerpt (no truncation)."""
+    import re as _re
+    # Strip markdown bold/italic markers and headers
+    clean = _re.sub(r'\*+', '', text)
+    clean = _re.sub(r'^#+\s+.*$', '', clean, flags=_re.MULTILINE)
+    clean = _re.sub(r'^[-•]\s+.*$', '', clean, flags=_re.MULTILINE)
+    clean = clean.strip()
+    # Split on sentence boundaries
+    sentences = _re.split(r'(?<=[.!?])\s+', clean)
+    result = ' '.join(s.strip() for s in sentences[:n] if s.strip())
+    return result if result else clean[:300]
+
 def supabase_publish(title, content, category_slug, excerpt=None, image_url=None,
                      source_name=None, source_url=None, status="published",
                      is_featured=False, is_breaking=False, region=None,
@@ -752,7 +765,7 @@ def supabase_publish(title, content, category_slug, excerpt=None, image_url=None
         "title": title,
         "slug": slug,
         "content": content,
-        "excerpt": excerpt or content[:200] + "..." if content else None,
+        "excerpt": excerpt or _extract_first_sentences(content, 2) if content else None,
         "image_url": image_url,
         "source_name": source_name,
         "source_url": source_url,

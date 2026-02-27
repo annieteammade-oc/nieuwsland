@@ -113,7 +113,7 @@ def write_article(topic):
 Je schrijft in het Nederlands, gericht op een Belgisch publiek.
 
 STRUCTUUR (verplicht):
-- **Lead** (2-3 zinnen, vetgedrukt intro die de kern samenvat)
+- Het artikel moet starten met een volwaardige inleidende alinea (2-3 zinnen) die de lezer het hele verhaal geeft
 - **Kernpunten** (bullet list met 3-5 belangrijkste feiten)
 - Meerdere korte paragrafen (MAX 3 zinnen per alinea)
 - Minstens 2-3 tussenkoppen (## Subtitel)
@@ -122,14 +122,17 @@ STRUCTUUR (verplicht):
 - Eindig met ## Wat nu? of ## Vooruitblik
 
 REGELS:
-- De lead MOET de 5 W's beantwoorden: Wie, Wat, Waar, Wanneer, Waarom/Hoe
+- De EXCERPT is een APARTE samenvatting (2-3 zinnen) die NIET in het artikel voorkomt. Dit is de teaser die lezers zien vóór ze klikken.
+- Het artikel zelf begint met een EIGEN inleidende alinea — NIET dezelfde tekst als de excerpt!
+- De eerste alinea van het artikel MOET een volwaardige zin zijn. NOOIT starten met kernpunten of een bullet list.
+- Lezers moeten het artikel volledig kunnen begrijpen ZONDER de excerpt te lezen. Het artikel is zelfstandig.
+- De intro MOET de 5 W's beantwoorden: Wie, Wat, Waar, Wanneer, Waarom/Hoe
 - Ontbrekende kerninfo (datums, namen, locaties) ALTIJD opzoeken in de bron — NOOIT weglaten
 - Schrijf een COMPLEET artikel (400-800 woorden)
 - Korte alinea's (MAX 3 zinnen, NOOIT een wall of text)
 - Wissel af: paragraaf → subtitel → bullets → paragraaf → quote
 - Gebruik **vette tekst** voor belangrijke termen
 - Gebruik bullets (•) waar nuttig
-- Begin met een pakkende intro (2-3 zinnen)
 - Eindig met een conclusie of vooruitblik
 - Schrijf in een toegankelijke, journalistieke stijl
 - HERSCHRIJF volledig — NOOIT copy-paste van bron
@@ -139,12 +142,13 @@ REGELS:
 OUTPUT FORMAT (exact):
 TITEL: [pakkende titel]
 SUBTITEL: [korte subtitel]
+EXCERPT: [2-3 zinnen samenvatting — deze tekst mag NIET in het artikel voorkomen!]
 TAGS: [tag1, tag2, tag3]
 AFBEELDING: [beschrijving van gewenste header afbeelding]
 
 ---
 
-[artikel tekst met **bold**, *cursief*, bullets etc.]
+[artikel tekst — start met een eigen inleidende alinea, NIET de excerpt herhalen]
 
 ---
 

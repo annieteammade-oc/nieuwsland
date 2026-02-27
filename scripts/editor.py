@@ -90,6 +90,9 @@ def extract_article_from_review(content):
     cat_match = re.search(r'—\s*(\w+)\s*artikel', content)
     category = cat_match.group(1).lower() if cat_match else "algemeen"
     
+    excerpt_match = re.search(r'EXCERPT:\s*(.+)', content)
+    excerpt = excerpt_match.group(1).strip() if excerpt_match else None
+    
     tags_match = re.search(r'TAGS:\s*(.+)', content)
     tags = [t.strip() for t in tags_match.group(1).split(",")] if tags_match else []
     
@@ -103,6 +106,7 @@ def extract_article_from_review(content):
     return {
         "title": title,
         "category": category,
+        "excerpt": excerpt,
         "tags": tags,
         "source": source,
         "body": body,
@@ -192,6 +196,7 @@ def publish_article(article_data):
     result = supabase_publish(
         title=article_data["title"],
         content=article_data["body"],
+        excerpt=article_data.get("excerpt"),
         category_slug=cat_slug,
         source_name=article_data.get("source"),
         status="published",

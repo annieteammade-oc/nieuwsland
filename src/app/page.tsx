@@ -327,21 +327,20 @@ export default async function HomePage() {
         <SectionTitle title="Spelletjes" subtitle="Retro arcade" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[
-            { name: "Woordraadsel", icon: "[W]", text: "Vind het woord in zes beurten." },
-            { name: "Kruiswoord", icon: "[+]", text: "Vul het raster met slimme hints." },
-            { name: "Memory", icon: "[M]", text: "Match alle kaarten zo snel mogelijk." },
-            { name: "Snake", icon: "[S]", text: "Groei zonder de muren te raken." },
-            { name: "Tetris", icon: "[T]", text: "Stapel blokken en wis lijnen." },
-            { name: "Quiz", icon: "[?]", text: "Test je kennis van het nieuws." },
+            { name: "Trivia Quiz", icon: "🧠", text: "Test je algemene kennis met spannende vragen.", href: "/games/trivia/index.html" },
+            { name: "Politiek Trivia", icon: "🏛️", text: "Hoeveel weet jij over Belgische politiek?", href: "/games/be-politiek/index.html" },
+            { name: "Voetbal Trivia", icon: "⚽", text: "Test je kennis over Belgisch voetbal.", href: "/games/belgische-voetbal-trivia/index.html" },
+            { name: "Realm Runner", icon: "🎮", text: "Spring en ren door een eindeloos arcade level.", href: "/games/realmrunner/index.html" },
+            { name: "Slime Soccer", icon: "🟢", text: "Speel een potje slime-voetbal tegen de AI.", href: "/games/slime-soccer/index.html" },
           ].map((game) => (
-            <div key={game.name} className="rounded-2xl border-2 border-slate-900 bg-white p-4 shadow-[4px_4px_0_0_#0f172a]">
-              <p className="text-2xl font-black text-[#1E3A8A]">{game.icon}</p>
+            <Link key={game.name} href={game.href} target="_blank" className="rounded-2xl border-2 border-slate-900 bg-white p-4 shadow-[4px_4px_0_0_#0f172a] transition-all duration-300 hover:scale-[1.03] hover:shadow-[6px_6px_0_0_#F97316]">
+              <p className="text-3xl">{game.icon}</p>
               <h3 className="mt-2 text-lg font-black uppercase tracking-tight text-slate-900">{game.name}</h3>
               <p className="mt-1 text-sm text-slate-600">{game.text}</p>
-              <button className="mt-4 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:scale-105 hover:bg-[#F97316] active:scale-95">
-                Speel
-              </button>
-            </div>
+              <span className="mt-4 inline-block rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-all duration-300 group-hover:bg-[#F97316]">
+                Speel →
+              </span>
+            </Link>
           ))}
         </div>
       </section>

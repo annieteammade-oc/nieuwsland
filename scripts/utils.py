@@ -228,11 +228,22 @@ def _llm_google(prompt, system=None, max_tokens=4000, temperature=0.7):
     }
     
     body = json.dumps(data).encode()
-    req = urllib.request.Request(url, data=body, method="POST",
-                                headers={"Content-Type": "application/json"})
-    resp = urllib.request.urlopen(req, context=ctx, timeout=120)
-    result = json.loads(resp.read())
-    return result["candidates"][0]["content"]["parts"][0]["text"]
+    
+    # Retry with backoff for 429 rate limits
+    for attempt in range(3):
+        req = urllib.request.Request(url, data=body, method="POST",
+                                    headers={"Content-Type": "application/json"})
+        try:
+            resp = urllib.request.urlopen(req, context=ctx, timeout=120)
+            result = json.loads(resp.read())
+            return result["candidates"][0]["content"]["parts"][0]["text"]
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and attempt < 2:
+                wait = (attempt + 1) * 15  # 15s, 30s
+                print(f"Gemini 429 rate limit, waiting {wait}s (attempt {attempt+1}/3)...")
+                time.sleep(wait)
+            else:
+                raise
 
 def _llm_openrouter(prompt, model="google/gemini-2.5-flash", system=None, max_tokens=4000, temperature=0.7):
     """Generate text via OpenRouter"""

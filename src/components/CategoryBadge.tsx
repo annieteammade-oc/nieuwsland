@@ -11,22 +11,22 @@ export function CategoryBadge({ category }: CategoryBadgeProps) {
   }
 
   const stylesBySlug: Record<string, string> = {
-    belgie: "bg-[#F97316] text-white",
-    wereld: "bg-[#1E3A8A] text-white",
-    politiek: "bg-purple-700 text-white",
-    economie: "bg-emerald-700 text-white",
-    sport: "bg-[#F97316] text-white",
-    tech: "bg-cyan-700 text-white",
-    cultuur: "bg-pink-600 text-white",
-    wetenschap: "bg-teal-700 text-white",
-    opinie: "bg-amber-600 text-white",
-    regionaal: "bg-emerald-700 text-white",
+    belgie: "bg-[#F97316]",
+    wereld: "bg-[#1E3A8A]",
+    politiek: "bg-purple-800",
+    economie: "bg-emerald-800",
+    sport: "bg-red-700",
+    tech: "bg-cyan-800",
+    cultuur: "bg-pink-700",
+    wetenschap: "bg-teal-800",
+    opinie: "bg-amber-700",
+    regionaal: "bg-green-800",
   };
 
   return (
     <Link
       href={`/categorie/${category.slug}`}
-      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] transition-all duration-300 hover:scale-105 ${stylesBySlug[category.slug] ?? "bg-blue-700 text-white"}`}
+      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-white shadow-sm transition-all duration-300 hover:scale-105 ${stylesBySlug[category.slug] ?? "bg-blue-700"}`}
     >
       <span aria-hidden>*</span>
       {category.name}

@@ -247,27 +247,27 @@ export default async function HomePage() {
 
       <section className="mt-10">
         <SectionTitle title="Sportnieuws" subtitle="Highlights van de sportredactie" />
-        <ArticleGrid articles={sportItems} columns={2} />
+        <ArticleGrid articles={sportItems.slice(0, 6)} columns={3} />
       </section>
 
       <section className="mt-10">
         <SectionTitle title="Actualiteit" subtitle="Binnenland en buitenland" />
-        <ArticleGrid articles={actualiteitItems} columns={2} />
+        <ArticleGrid articles={actualiteitItems.slice(0, 6)} columns={3} />
       </section>
 
       <section className="mt-10">
         <SectionTitle title="Tech News" subtitle="Innovatie en digitale trends" />
-        <ArticleGrid articles={techItems} columns={2} />
+        <ArticleGrid articles={techItems.slice(0, 6)} columns={3} />
       </section>
 
       <section className="mt-10">
         <SectionTitle title="Politiek Nieuws" subtitle="Beslissingen en debatten" />
-        <ArticleGrid articles={politiekItems} columns={2} />
+        <ArticleGrid articles={politiekItems.slice(0, 6)} columns={3} />
       </section>
 
       <section className="mt-10">
         <SectionTitle title="Cultuur & Entertainment" subtitle="Kunst, media en muziek" />
-        <ArticleGrid articles={cultuurItems} columns={2} />
+        <ArticleGrid articles={cultuurItems.slice(0, 6)} columns={3} />
       </section>
 
       <section className="mt-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">

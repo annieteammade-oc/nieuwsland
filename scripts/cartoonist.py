@@ -81,31 +81,42 @@ Kies het artikel dat zich het BESTE leent voor een editoriale cartoon.
 Denk aan: controverse, politiek, absurditeit, ironie, maatschappelijk debat.
 Maak een briljant cartoonconcept met een sterke visuele metafoor."""
 
-    result = llm_generate(prompt, model="google/gemini-2.5-flash", system=system, max_tokens=1500, temperature=0.8)
+    result = llm_generate(prompt, model="google/gemini-2.5-flash", system=system, max_tokens=4000, temperature=0.8, json_mode=True)
     if not result:
         print("LLM failed to generate concept")
         return None
     
-    # Parse JSON from response
-    try:
-        # Strip markdown code blocks if present
-        cleaned = result.strip()
-        # Remove markdown code fences
-        cleaned = re.sub(r'^```(?:json)?\s*\n?', '', cleaned)
-        cleaned = re.sub(r'\n?```\s*$', '', cleaned)
-        concept = json.loads(cleaned)
-        
-        # Attach the chosen article
-        idx = concept.get("article_index", 1) - 1
-        if 0 <= idx < len(articles):
-            concept["article"] = articles[idx]
-        else:
-            concept["article"] = articles[0]
-        
-        return concept
-    except json.JSONDecodeError as e:
-        print(f"JSON parse error: {e}\nRaw: {result[:500]}")
-        return None
+    # Parse JSON from response (with retry on failure)
+    for attempt in range(2):
+        try:
+            cleaned = result.strip()
+            # Remove markdown code fences
+            cleaned = re.sub(r'^```(?:json)?\s*\n?', '', cleaned)
+            cleaned = re.sub(r'\n?```\s*$', '', cleaned)
+            # Try to extract JSON object if there's extra text
+            match = re.search(r'\{[\s\S]*\}', cleaned)
+            if match:
+                cleaned = match.group(0)
+            concept = json.loads(cleaned)
+            
+            # Attach the chosen article
+            idx = concept.get("article_index", 1) - 1
+            if 0 <= idx < len(articles):
+                concept["article"] = articles[idx]
+            else:
+                concept["article"] = articles[0]
+            
+            return concept
+        except json.JSONDecodeError as e:
+            if attempt == 0:
+                print(f"JSON parse error (attempt 1): {e}\nRetrying with stricter prompt...")
+                result = llm_generate(prompt + "\n\nBELANGRIJK: Antwoord ALLEEN met valide JSON. Houd 'reason' kort (max 1 zin). Geen markdown.", model="google/gemini-2.5-flash", system=system, max_tokens=4000, temperature=0.5, json_mode=True)
+                if not result:
+                    print("LLM retry failed")
+                    return None
+            else:
+                print(f"JSON parse error (attempt 2): {e}\nRaw: {result[:500]}")
+                return None
 
 
 # ============================================================

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { VideoGallery } from "@/components/VideoSections";
 import type { Article } from "@/lib/types";
 
 function getYoutubeThumbnail(url: string): string | null {
@@ -57,6 +58,19 @@ export default function VideosPage() {
         <p className="mt-3 max-w-3xl text-sm text-blue-50">Alle video's op Nieuwsland.be</p>
       </div>
 
+      {/* Video Galerij — uitgelichte reportages */}
+      {videos.length > 0 && (
+        <div className="mb-10">
+          <h2 className="mb-5 border-b border-slate-200 pb-3 text-2xl font-black uppercase tracking-tight text-slate-900">
+            Video Galerij
+          </h2>
+          <VideoGallery lead={videos[0]} items={videos.slice(1, 5)} />
+        </div>
+      )}
+
+      <h2 className="mb-5 border-b border-slate-200 pb-3 text-2xl font-black uppercase tracking-tight text-slate-900">
+        Alle Video&apos;s
+      </h2>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {videos.map((video) => {
           const thumb = getVideoThumbnail(video);

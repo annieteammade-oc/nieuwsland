@@ -5,7 +5,7 @@ import { ArticleGrid } from "@/components/ArticleGrid";
 import { CategoryBadge } from "@/components/CategoryBadge";
 import { LiveBadge } from "@/components/LiveBadge";
 import { Sidebar } from "@/components/Sidebar";
-import { VideoGallery, VideoShorts } from "@/components/VideoSections";
+import { VideoShorts } from "@/components/VideoSections";
 import { getHomepageData } from "@/lib/news";
 import { formatTimeAgo } from "@/lib/format";
 import type { Article } from "@/lib/types";
@@ -39,31 +39,9 @@ function SectionTitle({
   );
 }
 
-function HeroSideItem({ article }: { article: Article }) {
-  return (
-    <Link
-      href={`/artikel/${article.slug}`}
-      className="group relative block h-52 overflow-hidden rounded-2xl bg-slate-900"
-    >
-      {article.image_url ? (
-        <Image src={article.image_url} alt={article.title} fill className="object-cover opacity-80" sizes="33vw" />
-      ) : null}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-      <div className="absolute bottom-0 p-4">
-        <CategoryBadge category={article.category} />
-        <p className="mt-3 text-base font-black uppercase leading-tight tracking-tight text-white">
-          {article.title}
-        </p>
-      </div>
-    </Link>
-  );
-}
-
 function MixedNews({ items }: { items: Article[] }) {
   const [lead, ...rest] = items;
-  if (!lead) {
-    return null;
-  }
+  if (!lead) return null;
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
@@ -100,30 +78,45 @@ function MixedNews({ items }: { items: Article[] }) {
   );
 }
 
+// Dedup: verwijder artikelen die al in usedIds zitten
+function dedup(items: Article[], usedIds: Set<number>, max: number): Article[] {
+  const result = items.filter((a) => !usedIds.has(a.id)).slice(0, max);
+  result.forEach((a) => usedIds.add(a.id));
+  return result;
+}
+
 export default async function HomePage() {
   const data = await getHomepageData();
   const hero = data.hero;
+  if (!hero) return null;
 
-  if (!hero) {
-    return null;
-  }
+  // Globale dedup tracker — elk artikel mag maar 1x op de homepage
+  const used = new Set<number>();
+  used.add(hero.id);
 
-  const videoLead = data.videos[0];
-  const fallbackItems = data.latest.slice(0, 6);
-  const pickCategory = (items: Article[]) => (items.length ? items : fallbackItems);
-  const sportItems = pickCategory(data.latest.filter((item) => item.category?.slug === "sport").slice(0, 6));
-  const techItems = pickCategory(data.latest.filter((item) => item.category?.slug === "tech").slice(0, 6));
-  const politiekItems = pickCategory(data.latest.filter((item) => item.category?.slug === "politiek").slice(0, 6));
-  const cultuurItems = pickCategory(data.latest.filter((item) => item.category?.slug === "cultuur").slice(0, 6));
-  const actualiteitItems = pickCategory(
-    data.latest
-      .filter((item) => ["belgie", "wereld", "economie", "wetenschap"].includes(item.category?.slug ?? ""))
-      .slice(0, 6),
-  );
+  // Hero side items
+  const heroSide = dedup(data.heroSide.length >= 4 ? data.heroSide : data.latest, used, 4);
+
+  // Nieuws van vandaag — recente items (nog niet gebruikt)
+  const vandaagItems = dedup(data.latest, used, 8);
+
+  // Categorie-secties — filter op categorie slug, dedup
+  const bySlug = (slug: string) =>
+    dedup(data.latest.filter((a) => a.category?.slug === slug), used, 6);
+
+  const sportItems    = bySlug("sport");
+  const techItems     = bySlug("tech");
+  const politiekItems = bySlug("politiek");
+  const cultuurItems  = bySlug("cultuur");
+  const wereldItems   = bySlug("wereld");
+  const belgieItems   = bySlug("belgie");
+
+  // Meer nieuws — resterende niet-gebruikte items
+  const meerItems = dedup(data.latest, used, 5);
 
   return (
     <div className="mx-auto max-w-7xl px-4 pt-5 pb-6 sm:px-6 lg:px-8">
-      {/* Trending ticker — bovenaan direct onder header */}
+      {/* Trending ticker */}
       <section className="mb-5 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
         <div className="flex items-center gap-4 overflow-hidden">
           <span className="flex-shrink-0 rounded-full bg-red-600 px-3 py-1 text-xs font-bold uppercase text-white">Trending</span>
@@ -139,10 +132,10 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Hero + sidebar */}
       <section className="grid gap-6 lg:grid-cols-[2fr_1fr] entrance-fade">
-        {/* Linkerkolom 2/3: Hero + 4 items + Nieuws van Vandaag */}
         <div className="space-y-6">
-          {/* a) Hero nieuwsitem */}
+          {/* Hero */}
           <article className="relative overflow-hidden rounded-3xl bg-slate-900 text-white shadow-xl">
             <Link href={`/artikel/${hero.slug}`} className="relative block min-h-[420px]">
               {hero.image_url ? (
@@ -162,9 +155,9 @@ export default async function HomePage() {
             </Link>
           </article>
 
-          {/* b) 4 kleine nieuwsitems (2x2) */}
+          {/* 4 sub-hero items */}
           <div className="grid grid-cols-2 gap-4">
-            {(data.heroSide.length >= 4 ? data.heroSide.slice(0, 4) : data.latest.slice(0, 4)).map((item) => (
+            {heroSide.map((item) => (
               <Link
                 key={item.id}
                 href={`/artikel/${item.slug}`}
@@ -182,39 +175,28 @@ export default async function HomePage() {
             ))}
           </div>
 
-          {/* c) Nieuws van Vandaag — in de linkerkolom */}
+          {/* Nieuws van Vandaag */}
           <div>
             <SectionTitle title="Nieuws van Vandaag" subtitle="Laatste updates" />
-            <ArticleGrid
-              articles={[...data.latest.slice(0, 9)].sort(
-                (a, b) => new Date(a.published_at).getTime() - new Date(b.published_at).getTime()
-              )}
-              columns={2}
-            />
+            <ArticleGrid articles={vandaagItems} columns={2} />
           </div>
         </div>
 
-        {/* Rechterkolom 1/3: Sidebar + Cartoon van de Dag */}
         <aside className="space-y-6">
           <Sidebar latest={data.latest} bestRead={data.bestRead} />
-
-          {/* Cartoon van de Dag */}
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <h3 className="mb-4 text-lg font-black uppercase tracking-tight text-slate-900">Cartoon van de Dag</h3>
             <div className="flex aspect-square items-center justify-center rounded-xl bg-slate-100 text-slate-400">
               <span className="text-6xl">🎨</span>
             </div>
-            <Link
-              href="#"
-              className="mt-4 block rounded-full bg-[#F97316] px-4 py-2.5 text-center text-sm font-bold text-white transition-all hover:bg-orange-600"
-            >
+            <Link href="#" className="mt-4 block rounded-full bg-[#F97316] px-4 py-2.5 text-center text-sm font-bold text-white transition-all hover:bg-orange-600">
               Meer cartoons
             </Link>
           </div>
         </aside>
       </section>
 
-      {/* Breaking news auto-scroll ticker */}
+      {/* Breaking ticker */}
       {data.breaking.length > 0 && (
         <section className="mt-6 overflow-hidden rounded-2xl bg-[#F97316] px-5 py-3 shadow-sm">
           <div className="flex items-center gap-4">
@@ -232,6 +214,7 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* Video Shorts */}
       <section className="mt-10">
         <div className="mb-5 flex items-end justify-between gap-3 border-b pb-3 border-slate-200">
           <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900">Bekijk Video&apos;s</h2>
@@ -240,36 +223,63 @@ export default async function HomePage() {
         <VideoShorts videos={data.videos} />
       </section>
 
-      <section className="mt-10">
-        <SectionTitle title="Meer Nieuws" />
-        <MixedNews items={data.mixedPrimary} />
-      </section>
+      {/* Meer Nieuws */}
+      {meerItems.length > 0 && (
+        <section className="mt-10">
+          <SectionTitle title="Meer Nieuws" />
+          <MixedNews items={meerItems} />
+        </section>
+      )}
 
-      <section className="mt-10">
-        <SectionTitle title="Sportnieuws" subtitle="Highlights van de sportredactie" />
-        <ArticleGrid articles={sportItems.slice(0, 6)} columns={3} />
-      </section>
+      {/* Sport */}
+      {sportItems.length > 0 && (
+        <section className="mt-10">
+          <SectionTitle title="Sportnieuws" subtitle="Highlights van de sportredactie" />
+          <ArticleGrid articles={sportItems} columns={3} />
+        </section>
+      )}
 
-      <section className="mt-10">
-        <SectionTitle title="Actualiteit" subtitle="Binnenland en buitenland" />
-        <ArticleGrid articles={actualiteitItems.slice(0, 6)} columns={3} />
-      </section>
+      {/* België */}
+      {belgieItems.length > 0 && (
+        <section className="mt-10">
+          <SectionTitle title="België" subtitle="Binnenlands nieuws" />
+          <ArticleGrid articles={belgieItems} columns={3} />
+        </section>
+      )}
 
-      <section className="mt-10">
-        <SectionTitle title="Tech News" subtitle="Innovatie en digitale trends" />
-        <ArticleGrid articles={techItems.slice(0, 6)} columns={3} />
-      </section>
+      {/* Wereld */}
+      {wereldItems.length > 0 && (
+        <section className="mt-10">
+          <SectionTitle title="Wereldnieuws" subtitle="Internationaal" />
+          <ArticleGrid articles={wereldItems} columns={3} />
+        </section>
+      )}
 
-      <section className="mt-10">
-        <SectionTitle title="Politiek Nieuws" subtitle="Beslissingen en debatten" />
-        <ArticleGrid articles={politiekItems.slice(0, 6)} columns={3} />
-      </section>
+      {/* Tech */}
+      {techItems.length > 0 && (
+        <section className="mt-10">
+          <SectionTitle title="Tech News" subtitle="Innovatie en digitale trends" />
+          <ArticleGrid articles={techItems} columns={3} />
+        </section>
+      )}
 
-      <section className="mt-10">
-        <SectionTitle title="Cultuur & Entertainment" subtitle="Kunst, media en muziek" />
-        <ArticleGrid articles={cultuurItems.slice(0, 6)} columns={3} />
-      </section>
+      {/* Politiek */}
+      {politiekItems.length > 0 && (
+        <section className="mt-10">
+          <SectionTitle title="Politiek Nieuws" subtitle="Beslissingen en debatten" />
+          <ArticleGrid articles={politiekItems} columns={3} />
+        </section>
+      )}
 
+      {/* Cultuur */}
+      {cultuurItems.length > 0 && (
+        <section className="mt-10">
+          <SectionTitle title="Cultuur & Entertainment" subtitle="Kunst, media en muziek" />
+          <ArticleGrid articles={cultuurItems} columns={3} />
+        </section>
+      )}
+
+      {/* Meest Gelezen */}
       <section className="mt-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <SectionTitle title="Meest Gelezen" subtitle="Top 10" />
         <ol className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -289,40 +299,29 @@ export default async function HomePage() {
         </ol>
       </section>
 
-      <section className="mt-10 rounded-3xl bg-[#1E3A8A] p-6 text-white">
-        <SectionTitle title="Regionaal" subtitle="Populair op Regio" inverse />
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {data.regional.map((item) => (
-            <Link
-              key={item.id}
-              href={`/artikel/${item.slug}`}
-              className="rounded-2xl border border-blue-400/60 bg-blue-800/40 p-3 transition-all duration-300 hover:scale-[1.02]"
-            >
-              <div className="relative h-36 overflow-hidden rounded-xl">
-                {item.image_url ? <Image src={item.image_url} alt={item.title} fill className="object-cover" sizes="300px" /> : null}
-              </div>
-              <p className="mt-3 text-xs uppercase tracking-wide text-orange-300">{item.region ?? "Vlaanderen"}</p>
-              <p className="mt-1 text-sm font-black uppercase leading-tight tracking-tight">{item.title}</p>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {videoLead ? (
-        <section className="mt-10">
-          <SectionTitle title="Video Galerij" subtitle="Uitgelichte reportages" />
-          <VideoGallery lead={videoLead} items={data.videos.slice(1, 5)} />
+      {/* Regionaal */}
+      {data.regional.length > 0 && (
+        <section className="mt-10 rounded-3xl bg-[#1E3A8A] p-6 text-white">
+          <SectionTitle title="Regionaal" subtitle="Populair op Regio" inverse />
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {data.regional.map((item) => (
+              <Link
+                key={item.id}
+                href={`/artikel/${item.slug}`}
+                className="rounded-2xl border border-blue-400/60 bg-blue-800/40 p-3 transition-all duration-300 hover:scale-[1.02]"
+              >
+                <div className="relative h-36 overflow-hidden rounded-xl">
+                  {item.image_url ? <Image src={item.image_url} alt={item.title} fill className="object-cover" sizes="300px" /> : null}
+                </div>
+                <p className="mt-3 text-xs uppercase tracking-wide text-orange-300">{item.region ?? "Vlaanderen"}</p>
+                <p className="mt-1 text-sm font-black uppercase leading-tight tracking-tight">{item.title}</p>
+              </Link>
+            ))}
+          </div>
         </section>
-      ) : null}
+      )}
 
-      <section className="mt-10 grid gap-6 lg:grid-cols-[2fr_1fr]">
-        <div>
-          <SectionTitle title="Regionale Verdieping" subtitle="Focus op lokale verhalen" />
-          <MixedNews items={data.mixedSecondary} />
-        </div>
-        <Sidebar latest={data.latest.slice(3)} bestRead={data.bestRead} />
-      </section>
-
+      {/* Games */}
       <section className="mt-10 mb-4 rounded-3xl border-2 border-slate-900 bg-white p-6 retro-card">
         <SectionTitle title="Spelletjes" subtitle="Retro arcade" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -337,9 +336,7 @@ export default async function HomePage() {
               <p className="text-3xl">{game.icon}</p>
               <h3 className="mt-2 text-lg font-black uppercase tracking-tight text-slate-900">{game.name}</h3>
               <p className="mt-1 text-sm text-slate-600">{game.text}</p>
-              <span className="mt-4 inline-block rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-all duration-300 group-hover:bg-[#F97316]">
-                Speel →
-              </span>
+              <span className="mt-4 inline-block rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Speel →</span>
             </Link>
           ))}
         </div>

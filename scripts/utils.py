@@ -1,5 +1,5 @@
 """
-Nieuwsland.be Content Engine — Shared Utilities
+Nieuwsland.be Content Engine - Shared Utilities
 Discord API, Google Sheets API, OpenRouter API, RSS parsing
 """
 
@@ -100,18 +100,18 @@ def discord_request(method, endpoint, data=None):
 def discord_send(channel_name, message, embed=None, file_content=None, filename="artikel.txt"):
     """Send a message to a Discord channel. If message > 2000 chars, splits or attaches file."""
     channel_id = CHANNELS.get(channel_name, channel_name)
-    
+
     # If file_content is provided, send as attachment
     if file_content:
         return discord_send_with_file(channel_id, message[:2000], file_content, filename)
-    
+
     # If message fits, send normally
     if len(message) <= 2000:
         data = {"content": message}
         if embed:
             data["embeds"] = [embed]
         return discord_request("POST", f"/channels/{channel_id}/messages", data)
-    
+
     # Message too long: split into chunks
     return discord_send_long(channel_id, message, embed)
 
@@ -131,7 +131,7 @@ def discord_send_long(channel_id, message, embed=None):
             split_at = 1950
         chunks.append(remaining[:split_at])
         remaining = remaining[split_at:].lstrip()
-    
+
     last_result = None
     for i, chunk in enumerate(chunks):
         data = {"content": chunk}
@@ -146,9 +146,9 @@ def discord_send_with_file(channel_id, message, file_content, filename="artikel.
     """Send a message with a text file attachment via multipart/form-data"""
     import io
     boundary = "----NieuwslandBoundary"
-    
+
     body = io.BytesIO()
-    
+
     # JSON payload part
     payload_json = json.dumps({"content": message[:2000]})
     body.write(f"--{boundary}\r\n".encode())
@@ -156,7 +156,7 @@ def discord_send_with_file(channel_id, message, file_content, filename="artikel.
     body.write(b"Content-Type: application/json\r\n\r\n")
     body.write(payload_json.encode())
     body.write(b"\r\n")
-    
+
     # File part
     file_bytes = file_content.encode("utf-8") if isinstance(file_content, str) else file_content
     body.write(f"--{boundary}\r\n".encode())
@@ -164,9 +164,9 @@ def discord_send_with_file(channel_id, message, file_content, filename="artikel.
     body.write(b"Content-Type: text/plain; charset=utf-8\r\n\r\n")
     body.write(file_bytes)
     body.write(b"\r\n")
-    
+
     body.write(f"--{boundary}--\r\n".encode())
-    
+
     url = f"https://discord.com/api/v10/channels/{channel_id}/messages"
     req = urllib.request.Request(url, data=body.getvalue(), method="POST", headers={
         "Authorization": "Bot " + get_discord_token(),
@@ -208,27 +208,31 @@ def _get_google_api_key():
         _creds_cache["google_api_key"] = config["models"]["providers"]["google"]["apiKey"]
     return _creds_cache["google_api_key"]
 
-def _llm_google(prompt, system=None, max_tokens=4000, temperature=0.7):
+def _llm_google(prompt, system=None, max_tokens=4000, temperature=0.7, json_mode=False):
     """Generate text via Google Gemini API directly"""
     api_key = _get_google_api_key()
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
-    
+
     parts = []
     if system:
         parts.append({"text": f"System: {system}\n\n{prompt}"})
     else:
         parts.append({"text": prompt})
-    
+
+    gen_config = {
+        "maxOutputTokens": max_tokens,
+        "temperature": temperature,
+    }
+    if json_mode:
+        gen_config["responseMimeType"] = "application/json"
+
     data = {
         "contents": [{"parts": parts}],
-        "generationConfig": {
-            "maxOutputTokens": max_tokens,
-            "temperature": temperature,
-        }
+        "generationConfig": gen_config,
     }
-    
+
     body = json.dumps(data).encode()
-    
+
     # Retry with backoff for 429 rate limits
     for attempt in range(3):
         req = urllib.request.Request(url, data=body, method="POST",
@@ -251,14 +255,14 @@ def _llm_openrouter(prompt, model="google/gemini-2.5-flash", system=None, max_to
     if system:
         messages.append({"role": "system", "content": system})
     messages.append({"role": "user", "content": prompt})
-    
+
     data = {
         "model": model,
         "messages": messages,
         "max_tokens": max_tokens,
         "temperature": temperature,
     }
-    
+
     body = json.dumps(data).encode()
     req = urllib.request.Request(
         "https://openrouter.ai/api/v1/chat/completions",
@@ -271,19 +275,19 @@ def _llm_openrouter(prompt, model="google/gemini-2.5-flash", system=None, max_to
             "X-Title": "Nieuwsland Content Engine",
         }
     )
-    
+
     resp = urllib.request.urlopen(req, context=ctx, timeout=120)
     result = json.loads(resp.read())
     return result["choices"][0]["message"]["content"]
 
-def llm_generate(prompt, model="google/gemini-2.5-flash", system=None, max_tokens=4000, temperature=0.7):
+def llm_generate(prompt, model="google/gemini-2.5-flash", system=None, max_tokens=4000, temperature=0.7, json_mode=False):
     """Generate text - tries Google Gemini direct first, falls back to OpenRouter"""
     # Try Google Gemini direct first (faster, no OpenRouter dependency)
     try:
-        return _llm_google(prompt, system=system, max_tokens=max_tokens, temperature=temperature)
+        return _llm_google(prompt, system=system, max_tokens=max_tokens, temperature=temperature, json_mode=json_mode)
     except Exception as e:
         print(f"Google Gemini direct failed: {e}, trying OpenRouter...")
-    
+
     # Fallback to OpenRouter
     try:
         return _llm_openrouter(prompt, model=model, system=system, max_tokens=max_tokens, temperature=temperature)
@@ -354,11 +358,11 @@ def parse_rss(url, max_items=5):
         resp = urllib.request.urlopen(req, context=ctx, timeout=15)
         raw = resp.read()
         root = ET.fromstring(raw)
-        
+
         items = []
         # Handle both RSS 2.0 and Atom feeds
         ns = {"atom": "http://www.w3.org/2005/Atom"}
-        
+
         # Try Atom first
         entries = root.findall(".//atom:entry", ns)
         if entries:
@@ -371,7 +375,7 @@ def parse_rss(url, max_items=5):
                 summary = entry.findtext("atom:summary", "", ns) or entry.findtext("atom:content", "", ns) or ""
                 published = entry.findtext("atom:published", "", ns) or entry.findtext("atom:updated", "", ns) or ""
                 items.append({"title": title.strip(), "link": link.strip(), "summary": summary[:500], "published": published})
-        
+
         # Try RSS 2.0
         if not items:
             for item in root.findall(".//item")[:max_items]:
@@ -380,7 +384,7 @@ def parse_rss(url, max_items=5):
                 summary = item.findtext("description", "")
                 published = item.findtext("pubDate", "")
                 items.append({"title": title.strip(), "link": link.strip(), "summary": summary[:500], "published": published})
-        
+
         return items
     except Exception as e:
         print(f"RSS error for {url}: {e}")
@@ -401,14 +405,14 @@ _sheets_token_exp = 0
 def _get_sheets_token():
     """Get OAuth2 token for Google Sheets/Drive using OAuth refresh token"""
     global _sheets_token, _sheets_token_exp
-    
+
     if _sheets_token and time.time() < _sheets_token_exp - 60:
         return _sheets_token
-    
+
     cred_path = os.path.join(_workspace(), "credentials", "google_docs_token.json")
     with open(cred_path) as f:
         creds = json.load(f)
-    
+
     # Refresh the access token
     token_data = urllib.parse.urlencode({
         "client_id": creds["client_id"],
@@ -416,19 +420,19 @@ def _get_sheets_token():
         "refresh_token": creds["refresh_token"],
         "grant_type": "refresh_token",
     }).encode()
-    
+
     req = urllib.request.Request(creds.get("token_uri", "https://oauth2.googleapis.com/token"), data=token_data, method="POST")
     resp = urllib.request.urlopen(req, context=ctx)
     result = json.loads(resp.read())
-    
+
     _sheets_token = result["access_token"]
     _sheets_token_exp = time.time() + result.get("expires_in", 3600)
-    
+
     # Update stored token
     creds["access_token"] = _sheets_token
     with open(cred_path, "w") as f:
         json.dump(creds, f, indent=2)
-    
+
     return _sheets_token
 
 def sheets_request(method, url, data=None):
@@ -499,10 +503,10 @@ def wp_publish(title, content, category=None, tags=None, featured_image_url=None
     if not wp:
         print("No WordPress credentials for nieuwsland.be")
         return None
-    
+
     import base64
     auth = base64.b64encode(f"{wp['username']}:{wp['app_password']}".encode()).decode()
-    
+
     post_data = {
         "title": title,
         "content": content,
@@ -512,7 +516,7 @@ def wp_publish(title, content, category=None, tags=None, featured_image_url=None
         post_data["categories"] = category if isinstance(category, list) else [category]
     if tags:
         post_data["tags"] = tags if isinstance(tags, list) else [tags]
-    
+
     body = json.dumps(post_data).encode()
     api_url = wp["url"].rstrip("/") + "/wp-json/wp/v2/posts"
     req = urllib.request.Request(api_url, data=body, method="POST", headers={
@@ -520,7 +524,7 @@ def wp_publish(title, content, category=None, tags=None, featured_image_url=None
         "Content-Type": "application/json",
         "User-Agent": "Nieuwsland/1.0",
     })
-    
+
     try:
         resp = urllib.request.urlopen(req, context=ctx)
         return json.loads(resp.read())
@@ -549,15 +553,15 @@ def generate_article_image(title, category, excerpt=None):
     if not api_key:
         print("⚠️ No OpenAI API key, skipping image generation")
         return None
-    
+
     # Build a prompt for a photorealistic news header image
-    # Keep it simple — overly detailed prompts make DALL-E produce more artificial results
+    # Keep it simple - overly detailed prompts make DALL-E produce more artificial results
     prompt = (
         f"Editorial press photograph: {title[:120]}. "
         f"Photojournalism style, natural lighting, candid moment. "
         f"No text, no logos, no watermarks."
     )
-    
+
     data = {
         "model": "gpt-image-1",
         "prompt": prompt,
@@ -565,7 +569,7 @@ def generate_article_image(title, category, excerpt=None):
         "size": "1536x1024",
         "quality": "medium",
     }
-    
+
     body = json.dumps(data).encode()
     req = urllib.request.Request(
         "https://api.openai.com/v1/images/generations",
@@ -576,7 +580,7 @@ def generate_article_image(title, category, excerpt=None):
             "Content-Type": "application/json",
         }
     )
-    
+
     try:
         resp = urllib.request.urlopen(req, context=ctx, timeout=90)
         result = json.loads(resp.read())
@@ -602,7 +606,7 @@ def upload_image_to_supabase(image_url, filename):
     """Download image from URL and upload to Supabase Storage.
     Returns the public URL or the original URL if upload fails."""
     sb = get_supabase_creds()
-    
+
     try:
         # Download/read image
         if image_url.startswith("file://"):
@@ -620,7 +624,7 @@ def upload_image_to_supabase(image_url, filename):
             resp = urllib.request.urlopen(req, context=ctx, timeout=30)
             image_data = resp.read()
             content_type = resp.headers.get("Content-Type", "image/png")
-        
+
         # Upload to Supabase Storage (bucket: article-images)
         upload_url = f"{sb['url']}/storage/v1/object/article-images/{filename}"
         upload_req = urllib.request.Request(upload_url, data=image_data, method="POST", headers={
@@ -630,7 +634,7 @@ def upload_image_to_supabase(image_url, filename):
             "x-upsert": "true",
         })
         urllib.request.urlopen(upload_req, context=ctx, timeout=30)
-        
+
         # Return public URL
         public_url = f"{sb['url']}/storage/v1/object/public/article-images/{filename}"
         return public_url
@@ -723,7 +727,7 @@ def supabase_publish(title, content, category_slug, excerpt=None, image_url=None
                      skip_quality_gate=False):
     """Publish an article to Supabase. Runs quality gate first. Returns the created article or None."""
     import re as _re
-    
+
     # Run quality gate BEFORE publishing
     if not skip_quality_gate:
         try:
@@ -735,7 +739,7 @@ def supabase_publish(title, content, category_slug, excerpt=None, image_url=None
                     print(f"   - {issue}")
                 # Post rejection to Discord #logs
                 try:
-                    discord_send("logs", 
+                    discord_send("logs",
                         f"🚫 **Quality Gate BLOCKED**: {title}\n"
                         f"Issues: {', '.join(qg['issues'])}")
                 except:
@@ -747,7 +751,7 @@ def supabase_publish(title, content, category_slug, excerpt=None, image_url=None
             print(f"✅ Quality gate passed: {title}")
         except ImportError:
             print("⚠️ quality_gate.py not found, publishing without checks")
-    
+
     # Generate image if none provided
     if not image_url:
         try:
@@ -760,7 +764,7 @@ def supabase_publish(title, content, category_slug, excerpt=None, image_url=None
                 image_url = upload_image_to_supabase(generated_url, filename)
         except Exception as e:
             print(f"Image generation skipped: {e}")
-    
+
     # Generate slug from title
     slug = title.lower().strip()
     slug = _re.sub(r'[^a-z0-9\s-]', '', slug)
@@ -768,10 +772,10 @@ def supabase_publish(title, content, category_slug, excerpt=None, image_url=None
     slug = slug[:80].rstrip('-')
     # Add hash to ensure uniqueness
     slug = f"{slug}-{hashlib.md5(title.encode()).hexdigest()[:6]}"
-    
+
     category_id = supabase_get_category_id(category_slug)
     author_id = supabase_get_author_id(category_slug)
-    
+
     article_data = {
         "title": title,
         "slug": slug,
@@ -788,10 +792,10 @@ def supabase_publish(title, content, category_slug, excerpt=None, image_url=None
         "author_id": author_id,
         "views": 0,
     }
-    
+
     # Remove None values
     article_data = {k: v for k, v in article_data.items() if v is not None}
-    
+
     result = supabase_request("POST", "articles", article_data)
     if result and len(result) > 0:
         return result[0]

@@ -334,9 +334,10 @@ export default async function HomePage() {
       <section className="mt-10 rounded-3xl bg-[#1E3A8A] p-8 text-white text-center">
         <h2 className="text-2xl font-black uppercase tracking-tight">Blijf elke dag als eerste op de hoogte</h2>
         <p className="mt-2 text-blue-200 text-sm">Schrijf je in op onze gratis nieuwsbrief en mis nooit meer een belangrijk verhaal.</p>
-        <form className="mt-6 flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
+        <form className="mt-6 flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto" action="#" method="post">
           <input
             type="email"
+            name="email"
             placeholder="jouw@emailadres.be"
             className="flex-1 rounded-full px-5 py-3 text-slate-900 text-sm font-medium outline-none focus:ring-2 focus:ring-orange-400"
           />

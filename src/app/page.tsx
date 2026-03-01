@@ -5,6 +5,7 @@ import { ArticleGrid } from "@/components/ArticleGrid";
 import { CategoryBadge } from "@/components/CategoryBadge";
 import { LiveBadge } from "@/components/LiveBadge";
 import { Sidebar } from "@/components/Sidebar";
+import { VideoShorts } from "@/components/VideoSections";
 import { getHomepageData } from "@/lib/news";
 import { formatTimeAgo } from "@/lib/format";
 import type { Article } from "@/lib/types";
@@ -225,7 +226,13 @@ export default async function HomePage() {
         <MixedNews items={actualiteitItems} />
       </section>
 
-      {/* Video Nieuws — verwijderd op verzoek */}
+      {/* Video Shorts */}
+      {data.videos && data.videos.length > 0 && (
+        <section className="mt-10">
+          <SectionTitle title="Video Shorts" subtitle="Korte videoclips" />
+          <VideoShorts videos={data.videos} />
+        </section>
+      )}
 
       {/* Meer Nieuws */}
       {meerItems.length > 0 && (

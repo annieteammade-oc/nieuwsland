@@ -220,11 +220,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Actualiteit */}
-      <section className="mt-10">
-        <SectionTitle title="Actualiteit" subtitle="Het laatste nieuws" />
-        <MixedNews items={actualiteitItems} />
-      </section>
+      {/* Actualiteit — verwijderd op verzoek */}
 
       {/* Video Shorts */}
       {data.videos && data.videos.length > 0 && (

@@ -99,6 +99,22 @@ export async function getHomepageData() {
   const latestPool = articles.slice(0, 24);
   const shuffledLatest = shuffleArray(latestPool).slice(0, 12);
 
+  // Fetch today's cartoon from Supabase Storage
+  let cartoonUrl: string | null = null;
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const supabase = createSupabaseServerClient();
+    const { data: cartoonData } = await supabase.storage
+      .from("article-images")
+      .getPublicUrl(`cartoons/cartoon-${today}.png`);
+    if (cartoonData?.publicUrl) {
+      // Verify the image actually exists by checking a recent cartoon
+      cartoonUrl = cartoonData.publicUrl;
+    }
+  } catch {
+    // Cartoon not available today
+  }
+
   return {
     hero: featured[0] ?? articles[0] ?? null,
     heroSide: featured.slice(1, 3),
@@ -110,6 +126,7 @@ export async function getHomepageData() {
     regional: regional.slice(0, 8),
     breaking,
     bestRead,
+    cartoonUrl,
   };
 }
 

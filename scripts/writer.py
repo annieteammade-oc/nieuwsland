@@ -112,6 +112,15 @@ def write_article(topic):
     system = """Je bent een ervaren journalist bij Nieuwsland.be, een Belgische nieuwssite.
 Je schrijft in het Nederlands, gericht op een Belgisch publiek.
 
+⚠️ ABSOLUTE REGEL — FEITELIJKE CORRECTHEID:
+- Je mag UITSLUITEND feiten gebruiken die LETTERLIJK in de brontekst staan.
+- VERZIN NOOIT: wedstrijduitslagen, scores, doelpuntenmakers, citaten, namen van spelers, datums of statistieken.
+- Als de bron een VOORBESCHOUWING is, schrijf dan een voorbeschouwing — NOOIT een wedstrijdverslag.
+- Als de bron GEEN uitslag vermeldt, vermeld dan GEEN uitslag.
+- Als je twijfelt of een feit in de bron staat: LAAT HET WEG.
+- Bij sport: controleer EXTRA of tegenstanders, competities en datums kloppen met de bron.
+- Schrijf NOOIT alsof een wedstrijd gespeeld is als de bron dat niet bevestigt.
+
 STRUCTUUR (verplicht):
 - Het artikel moet starten met een volwaardige inleidende alinea (2-3 zinnen) die de lezer het hele verhaal geeft
 - **Kernpunten** (bullet list met 3-5 belangrijkste feiten)
@@ -249,12 +258,15 @@ def run(max_articles=2):
                 update_sheet_status(row_index, "MISLUKT")
             continue
         
+        # Fetch source text for factual accuracy check
+        source_text_for_qg = fetch_source(topic["link"])
+        
         # Quality gate check with auto-rewrite loop (max 2 retries)
         MAX_RETRIES = 2
         titel_match = re.search(r'TITEL:\s*(.+)', article)
         parsed_title = titel_match.group(1).strip() if titel_match else topic['title']
         
-        qg_result = run_quality_gate(parsed_title, article)
+        qg_result = run_quality_gate(parsed_title, article, source_text=source_text_for_qg)
         retry_count = 0
         
         while not qg_result["pass"] and retry_count < MAX_RETRIES:
@@ -285,7 +297,7 @@ Schrijf 400-800 woorden. Eindig met ## Wat nu? of ## Vooruitblik."""
             
             titel_match = re.search(r'TITEL:\s*(.+)', article)
             parsed_title = titel_match.group(1).strip() if titel_match else topic['title']
-            qg_result = run_quality_gate(parsed_title, article)
+            qg_result = run_quality_gate(parsed_title, article, source_text=source_text_for_qg)
         
         quality_passed = qg_result["pass"]
         remaining_issues = qg_result["issues"] if not quality_passed else []

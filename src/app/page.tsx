@@ -189,12 +189,15 @@ export default async function HomePage() {
           <Sidebar latest={data.latest} bestRead={data.bestRead} />
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <h3 className="mb-4 text-lg font-black uppercase tracking-tight text-slate-900">Cartoon van de Dag</h3>
-            <div className="flex aspect-square items-center justify-center rounded-xl bg-slate-100 text-slate-400">
-              <span className="text-6xl">🎨</span>
-            </div>
-            <Link href="#" className="mt-4 block rounded-full bg-[#F97316] px-4 py-2.5 text-center text-sm font-bold text-white transition-all hover:bg-orange-600">
-              Meer cartoons
-            </Link>
+            {data.cartoonUrl ? (
+              <div className="relative aspect-square overflow-hidden rounded-xl bg-slate-100">
+                <Image src={data.cartoonUrl} alt="Cartoon van de dag" fill className="object-contain" sizes="300px" />
+              </div>
+            ) : (
+              <div className="flex aspect-square items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+                <span className="text-6xl">🎨</span>
+              </div>
+            )}
           </div>
         </aside>
       </section>

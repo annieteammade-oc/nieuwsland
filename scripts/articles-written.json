@@ -286,5 +286,37 @@
     "discord_msg_id": "1476972661560053771",
     "written_at": "2026-02-27 17:02",
     "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 207,
+      "found_at": "2026-02-26 7:27",
+      "category": "belgium",
+      "source": "HLN",
+      "title": "Drie op de vier mannen tussen 50 en 55 jaar laten een screening op dikkedarmkanker links liggen",
+      "link": "https://www.hln.be/binnenland/drie-op-de-vier-mannen-tussen-50-en-55-jaar-laten-een-screening-op-dikkedarmkanker-links-liggen~aaab9d7b/",
+      "score": 5,
+      "reden": "Directe impact op Belgische volksgezondheid, lokaal onderzoek."
+    },
+    "article": "TITEL: Drie op de vier mannen negeren levensreddende darmkankerscreening\nSUBTITEL: Opvallend lage deelname bij mannen tussen 50 en 55 jaar aan het Vlaamse bevolkingsonderzoek naar dikkedarmkanker\nEXCERPT: Een alarmerend hoog aantal mannen in Vlaanderen, met name 75 procent van de 50- tot 55-jarigen, slaat de gratis screening op dikkedarmkanker over. Dit ondanks het feit dat vroege opsporing de overlevingskansen aanzienlijk verhoogt en de ziekte de tweede meest voorkomende kanker in België is.\nTA...",
+    "discord_msg_id": "1477630757420663004",
+    "written_at": "2026-03-01 12:37",
+    "status": "REVIEW"
+  },
+  {
+    "topic": {
+      "row_index": 208,
+      "found_at": "2026-02-26 7:30",
+      "category": "belgium",
+      "source": "VRT NWS",
+      "title": "\"Antwerpse haven krijgt luchtafweergeschut vanaf 2027\", zegt premier Bart De Wever (N-VA)",
+      "link": "https://vrtnws.be/p.w7omMEw8J",
+      "score": 5,
+      "reden": "Directe impact op Belgische veiligheid en infrastructuur."
+    },
+    "article": "TITEL: Antwerpse Haven Krijgt Luchtafweer: Strategische Bescherming Vanaf 2027\nSUBTITEL: Premier De Wever kondigt komst Noors NASAMS-systeem aan voor cruciaal economisch en militair knooppunt.\nTAGS: Antwerpen, Haven, Luchtafweer, NASAMS, Defensie, België, De Wever, Strategie, Geopolitiek, NATO\nAFBEELDING: [Afbeelding: Een artistieke impressie van het NASAMS-systeem in de buurt van een haven, met schepen op de achtergrond en luchtafweerraketten die omhoog wijzen.]\n\nDe Antwerpse haven, een vitaal ...",
+    "discord_msg_id": "1477630916439445545",
+    "written_at": "2026-03-01 12:37",
+    "status": "REVIEW"
   }
 ]

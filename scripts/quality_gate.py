@@ -122,6 +122,51 @@ def check_has_source(source_url, source_name):
     return True, None
 
 
+def check_factual_accuracy(content, source_text):
+    """Check if article doesn't fabricate facts not in the source.
+    Specifically catches: fake match results, invented scores, made-up quotes."""
+    if not source_text:
+        return True, None  # Can't verify without source
+    
+    issues = []
+    source_lower = source_text.lower()
+    content_lower = content.lower()
+    
+    # Check for match scores in article (e.g., "3-1", "2-0") that aren't in source
+    score_pattern = re.compile(r'\b(\d{1,2})\s*[-–]\s*(\d{1,2})\b')
+    article_scores = score_pattern.findall(content)
+    source_scores = score_pattern.findall(source_text)
+    source_score_set = set(source_scores)
+    
+    for score in article_scores:
+        if score not in source_score_set and (score[1], score[0]) not in source_score_set:
+            issues.append(f"Score {score[0]}-{score[1]} staat NIET in de brontekst — mogelijk verzonnen!")
+    
+    # Check for quoted speech in article — quotes should come from source
+    quote_pattern = re.compile(r'"([^"]{20,})"')
+    article_quotes = quote_pattern.findall(content)
+    for quote in article_quotes:
+        # Check if at least some key words from the quote appear in source
+        words = [w for w in quote.lower().split() if len(w) > 4]
+        if words:
+            matching = sum(1 for w in words if w in source_lower)
+            if matching < len(words) * 0.3:
+                issues.append(f"Citaat lijkt verzonnen (niet in bron): \"{quote[:60]}...\"")
+    
+    # Check for specific minute references (e.g., "67ste minuut") not in source
+    minute_pattern = re.compile(r'(\d{1,3})\s*(?:st|de|ste|e)?\s*minuu?t', re.IGNORECASE)
+    article_minutes = minute_pattern.findall(content)
+    source_minutes = minute_pattern.findall(source_text)
+    source_minute_set = set(source_minutes)
+    for minute in article_minutes:
+        if minute not in source_minute_set:
+            issues.append(f"Minuut {minute} wordt genoemd maar staat niet in de bron — mogelijk verzonnen!")
+    
+    if issues:
+        return False, issues
+    return True, None
+
+
 def check_not_duplicate_content(content):
     """Voorkom dat dezelfde tekst twee keer in het artikel staat"""
     paragraphs = [p.strip() for p in content.split('\n\n') if p.strip() and len(p.strip()) > 50]
@@ -205,7 +250,7 @@ def clean_title(title):
 # MAIN QUALITY GATE
 # ============================================================
 
-def run_quality_gate(title, content):
+def run_quality_gate(title, content, source_text=None):
     """
     Run all quality checks on an article.
     Returns: {"pass": bool, "issues": list, "cleaned_title": str, "cleaned_content": str}
@@ -226,6 +271,10 @@ def run_quality_gate(title, content):
         check_not_duplicate_content(cleaned_content),
         check_formatting(cleaned_content),
     ]
+    
+    # Factual accuracy check (if source text available)
+    if source_text:
+        checks.append(check_factual_accuracy(cleaned_content, source_text))
     
     for passed, issue in checks:
         if not passed:

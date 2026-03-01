@@ -111,6 +111,9 @@ export default async function HomePage() {
   const wereldItems   = bySlug("wereld");
   const belgieItems   = bySlug("belgie");
 
+  // Actualiteit — mix van recente items
+  const actualiteitItems = dedup(data.latest, used, 5);
+
   // Meer nieuws — resterende niet-gebruikte items
   const meerItems = dedup(data.latest, used, 5);
 
@@ -214,11 +217,17 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Video Shorts */}
+      {/* Actualiteit */}
       <section className="mt-10">
-        <div className="mb-5 flex items-end justify-between gap-3 border-b pb-3 border-slate-200">
-          <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900">Bekijk Video&apos;s</h2>
-          <Link href="/videos" className="text-sm font-semibold text-[#1E3A8A] hover:underline">Alle video&apos;s →</Link>
+        <SectionTitle title="Actualiteit" subtitle="Het laatste nieuws" />
+        <MixedNews items={actualiteitItems} />
+      </section>
+
+      {/* Video Nieuws */}
+      <section className="mt-10 rounded-3xl bg-slate-900 p-6 text-white">
+        <div className="mb-5 flex items-end justify-between gap-3 border-b border-white/20 pb-3">
+          <h2 className="text-2xl font-black uppercase tracking-tight text-white">Video Nieuws</h2>
+          <Link href="/videos" className="text-sm font-semibold text-orange-400 hover:underline">Alle video&apos;s →</Link>
         </div>
         <VideoShorts videos={data.videos} />
       </section>
@@ -320,6 +329,26 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      {/* Newsletter Signup */}
+      <section className="mt-10 rounded-3xl bg-[#1E3A8A] p-8 text-white text-center">
+        <h2 className="text-2xl font-black uppercase tracking-tight">Blijf elke dag als eerste op de hoogte</h2>
+        <p className="mt-2 text-blue-200 text-sm">Schrijf je in op onze gratis nieuwsbrief en mis nooit meer een belangrijk verhaal.</p>
+        <form className="mt-6 flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
+          <input
+            type="email"
+            placeholder="jouw@emailadres.be"
+            className="flex-1 rounded-full px-5 py-3 text-slate-900 text-sm font-medium outline-none focus:ring-2 focus:ring-orange-400"
+          />
+          <button
+            type="submit"
+            className="rounded-full bg-[#F97316] px-6 py-3 text-sm font-bold text-white transition-all hover:bg-orange-600 whitespace-nowrap"
+          >
+            Inschrijven →
+          </button>
+        </form>
+        <p className="mt-3 text-xs text-blue-300">Geen spam. Uitschrijven kan altijd.</p>
+      </section>
 
       {/* Games */}
       <section className="mt-10 mb-4 rounded-3xl border-2 border-slate-900 bg-white p-6 retro-card">

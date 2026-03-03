@@ -286,26 +286,6 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Meest Gelezen */}
-      <section className="mt-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <SectionTitle title="Meest Gelezen" subtitle="Top 10" />
-        <ol className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {data.bestRead.map((item, index) => (
-            <li key={item.id} className="flex gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-              <span className="text-2xl font-black text-orange-500">{index + 1}</span>
-              <Link href={`/artikel/${item.slug}`} className="flex flex-1 gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-black uppercase leading-tight tracking-tight text-slate-900">{item.title}</p>
-                </div>
-                <div className="relative h-14 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-slate-200">
-                  {item.image_url ? <Image src={item.image_url} alt={item.title} fill className="object-cover" sizes="80px" /> : null}
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ol>
-      </section>
-
       {/* Regionaal */}
       {data.regional.length > 0 && (
         <section className="mt-10 rounded-3xl bg-[#1E3A8A] p-6 text-white">
@@ -337,7 +317,7 @@ export default async function HomePage() {
             type="email"
             name="email"
             placeholder="jouw@emailadres.be"
-            className="flex-1 rounded-full px-5 py-3 text-slate-900 text-sm font-medium outline-none focus:ring-2 focus:ring-orange-400"
+            className="flex-1 rounded-full bg-white px-5 py-3 text-slate-900 text-sm font-medium outline-none focus:ring-2 focus:ring-orange-400"
           />
           <button
             type="submit"
@@ -347,6 +327,26 @@ export default async function HomePage() {
           </button>
         </form>
         <p className="mt-3 text-xs text-blue-300">Geen spam. Uitschrijven kan altijd.</p>
+      </section>
+
+      {/* Meest Gelezen */}
+      <section className="mt-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <SectionTitle title="Meest Gelezen" subtitle="Top 10" />
+        <ol className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {data.bestRead.map((item, index) => (
+            <li key={item.id} className="flex gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <span className="text-2xl font-black text-orange-500">{index + 1}</span>
+              <Link href={`/artikel/${item.slug}`} className="flex flex-1 gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-black uppercase leading-tight tracking-tight text-slate-900">{item.title}</p>
+                </div>
+                <div className="relative h-14 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-slate-200">
+                  {item.image_url ? <Image src={item.image_url} alt={item.title} fill className="object-cover" sizes="80px" /> : null}
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ol>
       </section>
 
       {/* Games */}

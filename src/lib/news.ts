@@ -96,8 +96,16 @@ export async function getHomepageData() {
   const bestRead = shuffleArray([...articles].sort((a, b) => b.views - a.views).slice(0, 20)).slice(0, 10);
 
   // Shuffle latest pool for variety in "Net Binnen" and trending
-  const latestPool = articles.slice(0, 24);
-  const shuffledLatest = shuffleArray(latestPool).slice(0, 12);
+  const latestPool = articles.slice(0, 40);
+  const shuffledLatest = shuffleArray(latestPool).slice(0, 20);
+
+  // Per-category article lists for homepage sections (max 6 each)
+  const byCat = (slug: string) =>
+    articles.filter((a) => a.category?.slug === slug).slice(0, 6);
+  const sportCat    = byCat("sport");
+  const techCat     = byCat("tech");
+  const politiekCat = byCat("politiek");
+  const cultuurCat  = byCat("cultuur");
 
   // Fetch today's cartoon from Supabase Storage
   let cartoonUrl: string | null = null;
@@ -127,6 +135,10 @@ export async function getHomepageData() {
     breaking,
     bestRead,
     cartoonUrl,
+    sportCat,
+    techCat,
+    politiekCat,
+    cultuurCat,
   };
 }
 

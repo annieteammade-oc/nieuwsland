@@ -25,16 +25,22 @@ export const metadata: Metadata = {
 function SectionTitle({
   title,
   subtitle,
+  subtitleHref,
   inverse = false,
 }: {
   title: string;
   subtitle?: string;
+  subtitleHref?: string;
   inverse?: boolean;
 }) {
   return (
     <div className={`mb-5 flex items-end justify-between gap-3 border-b pb-3 ${inverse ? "border-blue-300/50" : "border-slate-200"}`}>
       <h2 className={`text-2xl font-black uppercase tracking-tight ${inverse ? "text-white" : "text-slate-900"}`}>{title}</h2>
-      {subtitle ? <p className={`text-sm ${inverse ? "text-blue-100" : "text-slate-500"}`}>{subtitle}</p> : null}
+      {subtitle && subtitleHref ? (
+        <Link href={subtitleHref} className={`text-sm font-semibold hover:underline ${inverse ? "text-blue-100" : "text-[#F97316]"}`}>{subtitle} →</Link>
+      ) : subtitle ? (
+        <p className={`text-sm ${inverse ? "text-blue-100" : "text-slate-500"}`}>{subtitle}</p>
+      ) : null}
     </div>
   );
 }
@@ -100,22 +106,14 @@ export default async function HomePage() {
   // Nieuws van vandaag — recente items (nog niet gebruikt)
   const vandaagItems = dedup(data.latest, used, 8);
 
-  // Categorie-secties — filter op categorie slug, dedup
-  const bySlug = (slug: string) =>
-    dedup(data.latest.filter((a) => a.category?.slug === slug), used, 6);
-
-  const sportItems    = bySlug("sport");
-  const techItems     = bySlug("tech");
-  const politiekItems = bySlug("politiek");
-  const cultuurItems  = bySlug("cultuur");
-  const wereldItems   = bySlug("wereld");
-  const belgieItems   = bySlug("belgie");
-
-  // Actualiteit — mix van recente items
-  const actualiteitItems = dedup(data.latest, used, 5);
-
-  // Meer nieuws — resterende niet-gebruikte items
+  // Meer nieuws — vaste pool van recente items (VOOR categorie dedup)
   const meerItems = dedup(data.latest, used, 5);
+
+  // Categorie-secties — directe arrays uit news.ts (altijd gevuld ongeacht dedup)
+  const sportItems    = data.sportCat;
+  const techItems     = data.techCat;
+  const politiekItems = data.politiekCat;
+  const cultuurItems  = data.cultuurCat;
 
   return (
     <div className="mx-auto max-w-7xl px-4 pt-5 pb-6 sm:px-6 lg:px-8">
@@ -241,31 +239,15 @@ export default async function HomePage() {
       {/* Sport */}
       {sportItems.length > 0 && (
         <section className="mt-10">
-          <SectionTitle title="Sportnieuws" subtitle="Highlights van de sportredactie" />
+          <SectionTitle title="Sportnieuws" subtitle="Highlights van de sportredactie" subtitleHref="/categorie/sport" />
           <ArticleGrid articles={sportItems} columns={3} />
-        </section>
-      )}
-
-      {/* België */}
-      {belgieItems.length > 0 && (
-        <section className="mt-10">
-          <SectionTitle title="België" subtitle="Binnenlands nieuws" />
-          <ArticleGrid articles={belgieItems} columns={3} />
-        </section>
-      )}
-
-      {/* Wereld */}
-      {wereldItems.length > 0 && (
-        <section className="mt-10">
-          <SectionTitle title="Wereldnieuws" subtitle="Internationaal" />
-          <ArticleGrid articles={wereldItems} columns={3} />
         </section>
       )}
 
       {/* Tech */}
       {techItems.length > 0 && (
         <section className="mt-10">
-          <SectionTitle title="Tech News" subtitle="Innovatie en digitale trends" />
+          <SectionTitle title="Tech News" subtitle="Innovatie en digitale trends" subtitleHref="/categorie/tech" />
           <ArticleGrid articles={techItems} columns={3} />
         </section>
       )}
@@ -273,7 +255,7 @@ export default async function HomePage() {
       {/* Politiek */}
       {politiekItems.length > 0 && (
         <section className="mt-10">
-          <SectionTitle title="Politiek Nieuws" subtitle="Beslissingen en debatten" />
+          <SectionTitle title="Politiek Nieuws" subtitle="Beslissingen en debatten" subtitleHref="/categorie/politiek" />
           <ArticleGrid articles={politiekItems} columns={3} />
         </section>
       )}
@@ -281,7 +263,7 @@ export default async function HomePage() {
       {/* Cultuur */}
       {cultuurItems.length > 0 && (
         <section className="mt-10">
-          <SectionTitle title="Cultuur & Entertainment" subtitle="Kunst, media en muziek" />
+          <SectionTitle title="Cultuur & Entertainment" subtitle="Kunst, media en muziek" subtitleHref="/categorie/cultuur" />
           <ArticleGrid articles={cultuurItems} columns={3} />
         </section>
       )}

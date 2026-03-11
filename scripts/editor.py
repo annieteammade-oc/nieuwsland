@@ -6,11 +6,11 @@ Geen handmatige goedkeuring nodig — volledig autonoom.
 Draait via cron elke 15 minuten.
 """
 
-import sys, os, json, time, re
+import sys, os, json, time, re, urllib.parse
 sys.path.insert(0, os.path.dirname(__file__))
 from utils import (
     discord_send, discord_get_messages, discord_request, log,
-    llm_generate, supabase_publish, now_str, sheets_read, sheets_update,
+    llm_generate, supabase_publish, supabase_request, now_str, sheets_read, sheets_update,
     BOT_ID, CHANNELS
 )
 from quality_gate import run_quality_gate
@@ -184,6 +184,79 @@ ANTWOORD: alleen de categorie-slug, niets anders."""
     
     return cat_slug
 
+def find_existing_article_by_title(title):
+    """Return existing article row for an exact title match, if any."""
+    try:
+        encoded_title = urllib.parse.quote(title, safe="")
+        rows = supabase_request(
+            "GET",
+            "articles",
+            params=f"?title=eq.{encoded_title}&select=id,slug,title&limit=1"
+        )
+        if rows and len(rows) > 0:
+            return rows[0]
+    except Exception:
+        pass
+    return None
+
+
+def check_semantic_duplicate(title, body):
+    """Check if an article with the same topic was already published in the last 7 days.
+    Uses LLM to compare against recent article titles in Supabase.
+    Returns (is_duplicate: bool, existing_title: str or None, reason: str)."""
+    from datetime import datetime, timedelta, timezone
+    
+    seven_days_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    
+    try:
+        recent = supabase_request(
+            "GET",
+            "articles",
+            params=f"?status=eq.published&created_at=gte.{seven_days_ago}&select=id,title&order=created_at.desc&limit=100"
+        )
+    except Exception as e:
+        print(f"  Duplicate check: Supabase query failed ({e}), skipping check")
+        return False, None, "check failed"
+    
+    if not recent:
+        return False, None, "no recent articles"
+    
+    recent_titles = "\n".join([f"- [{a['id']}] {a['title']}" for a in recent])
+    
+    prompt = f"""Je bent de duplicate-checker van Nieuwsland.be.
+
+NIEUW ARTIKEL:
+Titel: {title}
+Eerste 300 tekens: {body[:300]}
+
+RECENT GEPUBLICEERDE ARTIKELEN (laatste 7 dagen):
+{recent_titles}
+
+VRAAG: Behandelt het nieuwe artikel HETZELFDE ONDERWERP als een bestaand artikel?
+Let op: follow-up artikelen (nieuwe ontwikkelingen) over hetzelfde thema zijn GEEN duplicaten.
+Maar artikelen die hetzelfde nieuws herkauwen zonder nieuwe info zijn WEL duplicaten.
+
+ANTWOORD in JSON:
+{{"is_duplicate": true/false, "matching_id": null of ID, "matching_title": null of "titel", "reason": "korte uitleg"}}
+Alleen de JSON, niets anders."""
+
+    result = llm_generate(prompt, model="google/gemini-2.5-flash", max_tokens=200, temperature=0.1)
+    
+    if not result:
+        return False, None, "LLM unavailable"
+    
+    try:
+        json_match = re.search(r'\{[^}]+\}', result, re.DOTALL)
+        if json_match:
+            parsed = json.loads(json_match.group())
+            if parsed.get("is_duplicate"):
+                return True, parsed.get("matching_title"), parsed.get("reason", "duplicate")
+    except (json.JSONDecodeError, AttributeError):
+        pass
+    
+    return False, None, "no duplicate found"
+
+
 def publish_article(article_data):
     """Publish approved article to Supabase"""
     # Re-classify category based on content instead of blindly trusting source feed
@@ -192,7 +265,7 @@ def publish_article(article_data):
         article_data["body"],
         article_data["category"]
     )
-    
+
     result = supabase_publish(
         title=article_data["title"],
         content=article_data["body"],
@@ -201,7 +274,7 @@ def publish_article(article_data):
         source_name=article_data.get("source"),
         status="published",
     )
-    
+
     return result
 
 def update_sheet_article_status(title, status, url=""):
@@ -224,6 +297,20 @@ def handle_article(review):
     attachment_text = download_attachment_text(review.get("attachments", []))
     if attachment_text and len(attachment_text) > 100:
         article_data["body"] = attachment_text
+    
+    # Step 0: Semantic duplicate check against recent published articles
+    is_dupe, dupe_title, dupe_reason = check_semantic_duplicate(
+        article_data["title"], article_data["body"]
+    )
+    if is_dupe:
+        discord_send("review-queue",
+            f"🔁 **DUPLICATE GEBLOKKEERD** — {article_data['title']}\n"
+            f"Komt overeen met: *{dupe_title}*\n"
+            f"Reden: {dupe_reason}\n"
+            f"Artikel wordt NIET gepubliceerd.")
+        log("Editor", f"🔁 Duplicate geblokkeerd: {article_data['title']} (match: {dupe_title})")
+        update_sheet_article_status(article_data["title"], "DUPLICATE")
+        return False
     
     # Step 1: Run code-based quality gate
     qg_result = run_quality_gate(article_data["title"], article_data["body"])

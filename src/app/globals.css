@@ -24,6 +24,18 @@ a {
   text-decoration: none;
 }
 
+/* Article body links — orange like CTA buttons */
+.prose a {
+  color: var(--action-orange);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
+}
+
+.prose a:hover {
+  color: #ea580c;
+}
+
 .brand-transition {
   transition: all 0.3s ease;
 }
